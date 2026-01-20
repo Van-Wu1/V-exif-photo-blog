@@ -10,7 +10,7 @@ export default async function AdminAppConfigurationServer({
 }) {
   const connectionErrors = await testConnectionsAction().catch(() => ({}));
 
-  const secret = await generateAuthSecret();
+  const secret = await generateAuthSecret().catch(() => '');
 
   return (
     <AdminAppConfigurationClient {...{

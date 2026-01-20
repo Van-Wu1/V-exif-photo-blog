@@ -9,7 +9,7 @@ export default async function AdminAppConfiguration({
 }: {
   simplifiedView?: boolean
 }) {
-  const secret = await generateAuthSecret();
+  const secret = await generateAuthSecret().catch(() => '');
   return (
     <Suspense fallback={<AdminAppConfigurationClient {...{
       ...APP_CONFIGURATION,

@@ -55,20 +55,37 @@ export default function PhotoGrid({
     setSelectedPhotoIds,
   } = useSelectPhotosState();
 
+  // Use adaptive layout when aspect ratio is 0 (keep original photo aspect ratios)
+  const useAdaptiveLayout = GRID_ASPECT_RATIO === 0;
+
   return (
     <div
       {...{ [DATA_KEY_PHOTO_GRID]: selectable, className }}
     >
       <AnimateItems
         className={clsx(
-          'grid',
-          GRID_GAP_CLASSNAME,
-          small
-            ? 'grid-cols-3 xs:grid-cols-6'
-            : isGridHighDensity
-              ? 'grid-cols-2 xs:grid-cols-4 lg:grid-cols-6'
-              : 'grid-cols-2 sm:grid-cols-4 md:grid-cols-3 lg:grid-cols-4',
-          'items-center',
+          useAdaptiveLayout
+            ? clsx(
+                'grid',
+                'grid-flow-row-dense',
+                GRID_GAP_CLASSNAME,
+                small
+                  ? 'grid-cols-2 xs:grid-cols-4'
+                  : isGridHighDensity
+                    ? 'grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 lg:grid-cols-6'
+                    : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5',
+                'auto-rows-max',
+              )
+            : clsx(
+                'grid',
+                GRID_GAP_CLASSNAME,
+                small
+                  ? 'grid-cols-3 xs:grid-cols-6'
+                  : isGridHighDensity
+                    ? 'grid-cols-2 xs:grid-cols-4 lg:grid-cols-6'
+                    : 'grid-cols-2 sm:grid-cols-4 md:grid-cols-3 lg:grid-cols-4',
+                'items-center',
+              ),
         )}
         type={animate === false ? 'none' : undefined}
         canStart={canStart}
@@ -80,6 +97,10 @@ export default function PhotoGrid({
         onAnimationComplete={onAnimationComplete}
         items={photos.map((photo, index) => {
           const isSelected = selectedPhotoIds?.includes(photo.id) ?? false;
+          // Ensure aspectRatio is valid (greater than 0 and not NaN)
+          const validAspectRatio = useAdaptiveLayout && photo.aspectRatio > 0 && !isNaN(photo.aspectRatio)
+            ? photo.aspectRatio
+            : undefined;
           return <div
             key={photo.id}
             className={clsx(
@@ -87,8 +108,12 @@ export default function PhotoGrid({
               'group',
             )}
             style={{
-              ...GRID_ASPECT_RATIO !== 0 && {
+              ...!useAdaptiveLayout && GRID_ASPECT_RATIO !== 0 && {
                 aspectRatio: GRID_ASPECT_RATIO,
+              },
+              ...useAdaptiveLayout && validAspectRatio && {
+                aspectRatio: validAspectRatio,
+                width: '100%',
               },
             }}
           >
