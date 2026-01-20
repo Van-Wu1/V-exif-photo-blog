@@ -205,6 +205,12 @@ export default function PhotoLarge({
         ? 'w-[80%]'
         : undefined;
 
+  // For portrait photos, calculate max height based on viewport
+  // Use a more generous calculation to ensure photos look good
+  const isPortrait = photo.aspectRatio < 1;
+  // More generous height calculation for better display
+  const portraitMaxHeight = 'max-h-[calc(100vh-8rem)]';
+  
   const renderLargePhoto =
     <div className={clsx(
       'relative',
@@ -212,8 +218,8 @@ export default function PhotoLarge({
       // Always specify height to ensure fallback doesn't collapse
       arePhotosMatted && 'h-[90%]',
       arePhotosMatted && matteContentWidthForAspectRatio,
-      // Ensure portrait photos fit within viewport (subtract header/footer space)
-      !arePhotosMatted && photo.aspectRatio < 1 && 'max-h-[calc(100vh-12rem)]',
+      // For portrait photos, center them nicely
+      !arePhotosMatted && isPortrait && 'flex items-center justify-center min-h-[60vh]',
     )}>
       <ZoomControls
         ref={refZoomControls}
@@ -223,12 +229,17 @@ export default function PhotoLarge({
         <ImageLarge
           className={clsx(
             arePhotosMatted && 'h-full',
-            !arePhotosMatted && photo.aspectRatio < 1 && 'w-full max-h-[calc(100vh-12rem)]',
+            !arePhotosMatted && isPortrait && 'w-auto',
           )}
           classNameImage={clsx(
             arePhotosMatted && 'object-contain w-full h-full',
-            !arePhotosMatted && photo.aspectRatio < 1 && 'object-contain w-full h-auto max-h-[calc(100vh-12rem)]',
-            !arePhotosMatted && photo.aspectRatio >= 1 && 'object-contain w-full h-auto',
+            !arePhotosMatted && isPortrait && clsx(
+              'object-contain',
+              'w-auto max-w-full',
+              portraitMaxHeight,
+              'h-auto',
+            ),
+            !arePhotosMatted && !isPortrait && 'object-contain w-full h-auto',
           )}
           alt={altTextForPhoto(photo)}
           src={photo.url}
@@ -282,6 +293,8 @@ export default function PhotoLarge({
       ? 'dark:bg-(--matte-bg-dark)'
       // Only specify dark background when MATTE_COLOR is not configured
       : !MATTE_COLOR && 'dark:bg-gray-700/30'),
+    // For portrait photos, ensure container allows full height
+    !arePhotosMatted && isPortrait && 'min-h-0',
   );
 
   return (
