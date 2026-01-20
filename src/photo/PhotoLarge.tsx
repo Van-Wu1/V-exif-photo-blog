@@ -212,6 +212,8 @@ export default function PhotoLarge({
       // Always specify height to ensure fallback doesn't collapse
       arePhotosMatted && 'h-[90%]',
       arePhotosMatted && matteContentWidthForAspectRatio,
+      // Ensure portrait photos fit within viewport (subtract header/footer space)
+      !arePhotosMatted && photo.aspectRatio < 1 && 'max-h-[calc(100vh-12rem)]',
     )}>
       <ZoomControls
         ref={refZoomControls}
@@ -219,9 +221,15 @@ export default function PhotoLarge({
         {...{ isEnabled: showZoomControls, shouldZoomOnFKeydown }}
       >
         <ImageLarge
-          className={clsx(arePhotosMatted && 'h-full')}
-          classNameImage={clsx(arePhotosMatted &&
-            'object-contain w-full h-full')}
+          className={clsx(
+            arePhotosMatted && 'h-full',
+            !arePhotosMatted && photo.aspectRatio < 1 && 'w-full max-h-[calc(100vh-12rem)]',
+          )}
+          classNameImage={clsx(
+            arePhotosMatted && 'object-contain w-full h-full',
+            !arePhotosMatted && photo.aspectRatio < 1 && 'object-contain w-full h-auto max-h-[calc(100vh-12rem)]',
+            !arePhotosMatted && photo.aspectRatio >= 1 && 'object-contain w-full h-auto',
+          )}
           alt={altTextForPhoto(photo)}
           src={photo.url}
           aspectRatio={photo.aspectRatio}

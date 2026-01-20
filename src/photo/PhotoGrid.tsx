@@ -111,9 +111,15 @@ export default function PhotoGrid({
               ...!useAdaptiveLayout && GRID_ASPECT_RATIO !== 0 && {
                 aspectRatio: GRID_ASPECT_RATIO,
               },
-              ...useAdaptiveLayout && validAspectRatio && {
-                aspectRatio: validAspectRatio,
-                width: '100%',
+              ...useAdaptiveLayout && {
+                ...(validAspectRatio ? {
+                  aspectRatio: validAspectRatio,
+                  width: '100%',
+                } : {
+                  // Fallback: use default aspect ratio if invalid
+                  aspectRatio: 1,
+                  width: '100%',
+                }),
               },
             }}
           >
