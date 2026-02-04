@@ -136,24 +136,24 @@ export default function NavClient({
                       {navCaption}
                     </div>}
                 </div>
+                {/* Theme switcher fixed within nav - positioned at screen right edge */}
+                <div className={clsx(
+                  'absolute top-0',
+                  'flex items-center h-full',
+                  // Use viewport calculation to position at screen right edge
+                  // Account for layout margin: mx-3 lg:mx-6, plus extra spacing
+                  'right-[calc(-100vw+100%+0.75rem+0.5rem)]',
+                  'lg:right-[calc(-100vw+100%+1.5rem+1rem)]',
+                  // Ensure it's above other content
+                  'z-50',
+                )}>
+                  <ThemeSwitcher />
+                </div>
               </nav>]
               : []}
           />
         }
       />
-      {/* Theme switcher fixed to top-right corner */}
-      {showNav && (
-        <div className={clsx(
-          'fixed top-0 right-0',
-          'flex items-center',
-          NAV_HEIGHT_CLASS,
-          'z-50',
-          // Match layout container margins: mx-3 lg:mx-6
-          'mr-3 lg:mr-6',
-        )}>
-          <ThemeSwitcher />
-        </div>
-      )}
     </>
   );
 };
