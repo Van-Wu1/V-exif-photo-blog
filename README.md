@@ -1,10 +1,11 @@
 # 📷 `EXIF` Photo Blog
 
+> **基于 [exif-photo-blog](https://github.com/sambecker/exif-photo-blog) 的自定义版本**  
+> 原项目由 [@sambecker](https://github.com/sambecker) 开发，这是一个功能完整的照片博客模板，支持 EXIF 数据提取、AI 生成描述、标签管理等特性。
+
 https://github.com/sambecker/exif-photo-blog/assets/169298/4253ea54-558a-4358-8834-89943cfbafb4
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/sambecker-pro/clone?demo-description=Store%20photos%20with%20original%20camera%20data&demo-image=%2F%2Fimages.ctfassets.net%2Fe5382hct74si%2F39rys245Px3FVBGRJNYEON%2Fbf68d5c052bda9e9e5bec21878764bc3%2Fimage.png&demo-title=Photo%20Blog&demo-url=https%3A%2F%2Fphotos.sambecker.com&from=templates&project-name=Photo%20Blog&repository-name=exif-photo-blog&repository-url=https%3A%2F%2Fgithub.com%2Fsambecker%2Fexif-photo-blog&skippable-integrations=1&stores=%5B%7B%22type%22%3A%22postgres%22%7D%2C%7B%22type%22%3A%22blob%22%7D%5D&teamCreateStatus=hidden)
-
-🎬&nbsp;&nbsp;Demo
+🎬&nbsp;&nbsp;原项目演示
 -
 https://photos.sambecker.com
 
@@ -23,45 +24,106 @@ https://photos.sambecker.com
 
 <img src="/readme/og-image-share.png" alt="OG Image Preview" width=600 />
 
-🛠️&nbsp;&nbsp;Installation
+🛠️&nbsp;&nbsp;安装指南
 -
-### 1. Deploy to Vercel
+### 1. 部署到 Vercel
 
-1. Click [Deploy](https://vercel.com/new/clone?demo-title=Photo+Blog&demo-description=Store+photos+with+original+camera+data&demo-url=https%3A%2F%2Fphotos.sambecker.com&demo-image=https%3A%2F%2Fphotos.sambecker.com%2Ftemplate-image-tight&project-name=Photo+Blog&repository-name=exif-photo-blog&repository-url=https%3A%2F%2Fgithub.com%2Fsambecker%2Fexif-photo-blog&from=templates&skippable-integrations=1&teamCreateStatus=hidden&stores=%5B%7B%22type%22%3A%22postgres%22%7D%2C%7B%22type%22%3A%22blob%22%7D%5D)
-2. Add required storage ([Vercel Postgres](https://vercel.com/docs/storage/vercel-postgres/quickstart#create-a-postgres-database) + [Vercel Blob](https://vercel.com/docs/storage/vercel-blob/quickstart#create-a-blob-store)) as part of template installation
-3. Configure environment variable for production domain in project settings
-   - `NEXT_PUBLIC_DOMAIN` (e.g., photos.domain.com—used in absolute urls and seen in navigation if no explicit nav title is set)
+1. Fork 或克隆此仓库到你的 GitHub 账户
+2. 在 Vercel 中导入项目
+3. 配置数据库和存储服务（见下方说明）
+4. 配置环境变量（见下方说明）
 
-### 2. Setup Auth
+### 2. 数据库配置
 
-1. [Generate auth secret](https://generate-secret.vercel.app/32) and add to environment variables:
+本项目需要 PostgreSQL 数据库。支持以下数据库提供商：
+
+#### 使用 Neon（推荐）
+
+1. 在 [Neon](https://neon.tech) 创建数据库
+2. 复制连接字符串（`DATABASE_URL`）
+3. 在 Vercel 环境变量中添加：
+   - `DATABASE_URL`：Neon 提供的连接字符串
+   - `POSTGRES_URL`：**必须设置为与 `DATABASE_URL` 相同的值**（代码检查的是 `POSTGRES_URL`）
+   - `POSTGRES_PASSWORD`：数据库密码（如果 Neon 提供）
+   - `POSTGRES_DATABASE`：数据库名称（如果 Neon 提供）
+   - `PGPASSWORD`：PostgreSQL 密码（如果 Neon 提供）
+
+#### 使用 Vercel Postgres
+
+1. 在 Vercel 项目页面添加 [Vercel Postgres](https://vercel.com/docs/storage/vercel-postgres/quickstart#create-a-postgres-database)
+2. Vercel 会自动配置 `POSTGRES_URL` 环境变量
+
+#### 使用其他 PostgreSQL 提供商
+
+- 设置 `POSTGRES_URL` 为你的数据库连接字符串
+- 某些提供商可能需要禁用 SSL：设置 `DISABLE_POSTGRES_SSL = 1`
+
+### 3. 存储配置
+
+本项目需要对象存储服务来存储照片文件。至少需要配置以下之一：
+
+#### 使用 Vercel Blob（推荐）
+
+1. 在 Vercel 项目页面添加 [Vercel Blob](https://vercel.com/docs/storage/vercel-blob/quickstart#create-a-blob-store)
+2. Vercel 会自动配置 `BLOB_READ_WRITE_TOKEN` 环境变量
+
+#### 使用其他存储提供商
+
+详见下方 [Alternate storage providers](#alternate-storage-providers) 章节
+
+### 4. 配置生产域名
+
+在 Vercel 环境变量中设置：
+- `NEXT_PUBLIC_DOMAIN`（例如：photos.domain.com，用于绝对 URL 和导航显示）
+
+### 5. 配置认证
+
+1. [生成认证密钥](https://generate-secret.vercel.app/32)（32 字节随机字符串）并添加到环境变量：
    - `AUTH_SECRET`
-2. Add admin user to environment variables:
-   - `ADMIN_EMAIL`
-   - `ADMIN_PASSWORD`
-3. Trigger redeploy
-   - Visit project on Vercel, navigate to "Deployments" tab, click ••• button next to most recent deployment, and select "Redeploy"
+2. 添加管理员账号到环境变量：
+   - `ADMIN_EMAIL`：管理员邮箱
+   - `ADMIN_PASSWORD`：管理员密码
+3. **重要**：触发重新部署
+   - 访问 Vercel 项目页面，进入 "Deployments" 标签
+   - 点击最新部署旁边的 ••• 按钮，选择 "Redeploy"
+   - 等待部署完成后，环境变量才会生效
 
-### 3. Upload your first photo 🎉
-1. Visit `/admin`
-2. Sign in with credentials supplied in Step 2
-2. Click "Upload Photos"
-3. Add optional title
-4. Click "Create"
+> ⚠️ **环境变量检查**：项目会检查以下必需的环境变量是否都已配置：
+> - ✅ 数据库：`POSTGRES_URL`（或 `DATABASE_URL` + `POSTGRES_URL`）
+> - ✅ 存储提供商：至少一个（`BLOB_READ_WRITE_TOKEN`、Cloudflare R2、AWS S3 或 MinIO）
+> - ✅ 认证密钥：`AUTH_SECRET`
+> - ✅ 管理员账号：`ADMIN_EMAIL` + `ADMIN_PASSWORD`
+> 
+> 只有当所有必需的环境变量都配置完成后，应用才会显示正常界面，否则会显示配置页面。
 
-🔄&nbsp;&nbsp;Receiving updates
+### 6. 上传你的第一张照片 🎉
+
+1. 访问 `/admin`
+2. 使用步骤 5 中配置的账号登录
+3. 点击 "Upload Photos"
+4. 添加可选的标题
+5. 点击 "Create"
+
+🔄&nbsp;&nbsp;接收原项目更新
 -
-If you don't plan to change the code, or don't mind making your updates public, consider [forking](https://github.com/sambecker/exif-photo-blog/fork) this repo to easily receive future updates. If you've already set up your project on Vercel see these [migration instructions](#how-do-i-receive-template-updates).
+如果你希望接收原项目的更新，可以考虑：
 
-💻&nbsp;&nbsp;Local development
+1. **Fork 原仓库**：[Fork exif-photo-blog](https://github.com/sambecker/exif-photo-blog/fork) 到你的 GitHub 账户
+2. **合并更新**：参考 [如何接收模板更新](#how-do-i-receive-template-updates) 章节
+3. **注意**：合并时可能需要解决冲突，特别是如果你修改了代码结构
+
+> 💡 **提示**：本仓库是基于原项目的自定义版本，建议定期关注 [原项目](https://github.com/sambecker/exif-photo-blog) 的更新。
+
+💻&nbsp;&nbsp;本地开发
 -
-1. Clone code
-2. Run `pnpm i` to install dependencies
-3. If necessary, install [Vercel CLI](https://vercel.com/docs/cli#installing-vercel-cli) and authenticate by running `vercel login`
-4. Run `vercel link` to connect CLI to your project
-5. Run `vercel dev` to start dev server with Vercel-managed environment variables
+1. 克隆代码：`git clone <your-repo-url>`
+2. 安装依赖：`pnpm i`（或 `npm install`）
+3. 安装 [Vercel CLI](https://vercel.com/docs/cli#installing-vercel-cli)（如果尚未安装）
+4. 登录 Vercel：`vercel login`
+5. 链接项目：`vercel link`（连接到你的 Vercel 项目）
+6. 启动开发服务器：`vercel dev`（会自动加载 Vercel 管理的环境变量）
 
-See FAQ for [limitations of local development](#can-i-work-locally-without-access-to-an-image-storage-provider)
+> ⚠️ **注意**：本地开发需要访问外部存储提供商，详见 [FAQ](#can-i-work-locally-without-access-to-an-image-storage-provider)
 
 🎨&nbsp;&nbsp;Customization
 -
@@ -208,9 +270,9 @@ Create Upstash Redis store from storage tab of Vercel dashboard and link to your
   - removes build identifier in `<head />`
   - disables `/admin/configuration/export.json`
 
-## Alternate storage providers
+## 其他存储提供商
 
-Only one storage adapter—Vercel Blob, Cloudflare R2, AWS S3, or MinIO—can be used at a time. Ideally, this is configured before photos are uploaded (see [Issue #34](https://github.com/sambecker/exif-photo-blog/issues/34) for migration considerations). If you have multiple adapters, you can set one as preferred by storing `aws-s3`, `cloudflare-r2`, `minio`, or `vercel-blob` in `NEXT_PUBLIC_STORAGE_PREFERENCE`. See [FAQ](#will-there-be-support-for-image-storage-providers-beyond-vercel-aws-and-cloudflare) regarding unsupported providers.
+同一时间只能使用一个存储适配器：Vercel Blob、Cloudflare R2、AWS S3 或 MinIO。理想情况下，这应该在照片上传之前配置（迁移注意事项请参考 [Issue #34](https://github.com/sambecker/exif-photo-blog/issues/34)）。如果你有多个适配器，可以通过在 `NEXT_PUBLIC_STORAGE_PREFERENCE` 中设置 `aws-s3`、`cloudflare-r2`、`minio` 或 `vercel-blob` 来指定首选提供商。关于不支持的提供商，请参考 [FAQ](#will-there-be-support-for-image-storage-providers-beyond-vercel-aws-and-cloudflare)。
 
 ### Cloudflare R2
 
@@ -383,13 +445,26 @@ Create a dedicated user and a policy that grants permission to manage objects wi
   - `MINIO_ACCESS_KEY`: Your MINIO_ACCESS_KEY
   - `MINIO_SECRET_ACCESS_KEY`: Your MINIO_SECRET_ACCESS_KEY
 
-## Alternate database providers (experimental)
+## 其他数据库提供商（实验性）
 
-Vercel Postgres can be switched to another Postgres-compatible, pooling provider by updating `POSTGRES_URL`. Some providers only work when SSL is disabled, which can configured by setting `DISABLE_POSTGRES_SSL = 1`.
+可以将 Vercel Postgres 切换为其他 PostgreSQL 兼容的数据库提供商，只需更新 `POSTGRES_URL` 环境变量。
+
+### Neon
+
+1. 在 [Neon](https://neon.tech) 创建数据库
+2. 复制连接字符串（`DATABASE_URL`）
+3. **重要**：同时设置 `POSTGRES_URL` 为相同的值（代码检查的是 `POSTGRES_URL`）
+4. 如果遇到 SSL 问题，可以设置 `DISABLE_POSTGRES_SSL = 1`
 
 ### Supabase
-1. Ensure connection string is set to "Transaction Mode" via port `6543`
-2. Disable SSL by setting `DISABLE_POSTGRES_SSL = 1`
+
+1. 确保连接字符串设置为 "Transaction Mode"，使用端口 `6543`
+2. 禁用 SSL：设置 `DISABLE_POSTGRES_SSL = 1`
+
+### 其他 PostgreSQL 提供商
+
+- 设置 `POSTGRES_URL` 为你的数据库连接字符串
+- 某些提供商可能需要禁用 SSL：设置 `DISABLE_POSTGRES_SSL = 1`
 
 💬 &nbsp;&nbsp;I18N
 -
@@ -408,10 +483,44 @@ Partial internationalization (for non-admin, user-facing text) provided for a ha
 
 To add support for a new language, open a PR following instructions in [/src/i18n/index.ts](https://github.com/sambecker/exif-photo-blog/blob/main/src/i18n/index.ts), using [en-us.ts](https://github.com/sambecker/exif-photo-blog/blob/main/src/i18n/locales/en-us.ts) as reference.
 
-Thank you ❤️ translators: [@sconetto](https://github.com/sconetto) (`pt-br`, `pt-pt`), [@brandnholl](https://github.com/brandnholl) (`id-id`), [@TongEc](https://github.com/TongEc) (`zh-cn`), [@xahidex](https://github.com/xahidex) (`bd-bn`, `hi-in`), [@mehmetabak](https://github.com/mehmetabak) (`tr-tr`), [@simondeeley](https://github.com/simondeeley) (`en-gb`)
+感谢 ❤️ 翻译贡献者：[@sconetto](https://github.com/sconetto) (`pt-br`, `pt-pt`), [@brandnholl](https://github.com/brandnholl) (`id-id`), [@TongEc](https://github.com/TongEc) (`zh-cn`), [@xahidex](https://github.com/xahidex) (`bd-bn`, `hi-in`), [@mehmetabak](https://github.com/mehmetabak) (`tr-tr`), [@simondeeley](https://github.com/simondeeley) (`en-gb`)
 
-📖&nbsp;&nbsp;FAQ
+---
+
+## 📝 关于本项目
+
+本项目是基于 [exif-photo-blog](https://github.com/sambecker/exif-photo-blog) 的自定义版本，保留了原项目的所有核心功能，并根据实际使用需求进行了部分调整和优化。
+
+### 主要修改
+
+- 更新了数据库配置说明，特别说明了 Neon 数据库的使用方法
+- 优化了环境变量配置说明
+- 添加了中文说明文档
+
+### 致谢
+
+感谢原项目作者 [@sambecker](https://github.com/sambecker) 开发了这个优秀的照片博客模板。如果你觉得这个项目有用，请给 [原项目](https://github.com/sambecker/exif-photo-blog) 一个 ⭐️。
+
+📖&nbsp;&nbsp;常见问题
 -
+#### 为什么我配置了环境变量，但界面还是显示配置页面？
+> 项目使用静态生成（`force-static`），页面在构建时就已经确定内容。如果构建时 `IS_APP_READY` 为 `false`（缺少必需的环境变量），页面会显示配置页面。即使后来添加了环境变量，也需要**重新部署**才能生效。
+> 
+> **必需的环境变量检查**：
+> - `POSTGRES_URL`：数据库连接字符串（如果使用 Neon，需要同时设置 `DATABASE_URL` 和 `POSTGRES_URL`）
+> - 存储提供商：至少一个（`BLOB_READ_WRITE_TOKEN`、Cloudflare R2、AWS S3 或 MinIO）
+> - `AUTH_SECRET`：认证密钥
+> - `ADMIN_EMAIL` + `ADMIN_PASSWORD`：管理员账号
+> 
+> 配置完成后，在 Vercel 中触发一次重新部署即可。
+
+#### 使用 Neon 数据库时，为什么需要同时设置 `DATABASE_URL` 和 `POSTGRES_URL`？
+> Neon 提供的是 `DATABASE_URL` 环境变量，但代码检查的是 `POSTGRES_URL`。因此需要：
+> 1. 设置 `DATABASE_URL` 为 Neon 的连接字符串
+> 2. **同时设置 `POSTGRES_URL` 为相同的值**
+> 
+> 这样既满足了 Neon 的要求，也满足了代码的检查。
+
 #### How do I receive template updates?
 > For forked repos, click "Code," then "Update branch" from the main repo page. If you originally cloned the code, you can [create a fork](https://github.com/sambecker/exif-photo-blog/fork) from GitHub, then update your Git connection from your Vercel project settings. Once you've done this, you may need to go to your project deployments page, click •••, select "Create deployment," and choose `main`.
 
