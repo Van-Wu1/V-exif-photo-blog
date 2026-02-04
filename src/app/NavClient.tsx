@@ -22,6 +22,7 @@ import {
 import { useRef } from 'react';
 import useStickyNav from './useStickyNav';
 import { useAppState } from '@/app/AppState';
+import { BiArrowBack } from 'react-icons/bi';
 
 const NAV_HEIGHT_CLASS = NAV_CAPTION
   ? 'min-h-[4rem] sm:min-h-[5rem]'
@@ -93,6 +94,25 @@ export default function NavClient({
                   'relative',
                   classNameStickyNav,
                 )}>
+                {/* Back Button */}
+                <a
+                  href="https://involv.studio/index.html"
+                  className={clsx(
+                    'hover-trigger flex items-center gap-2 group',
+                    'mr-4',
+                    'opacity-40 hover:opacity-100 transition-opacity',
+                  )}
+                >
+                  <BiArrowBack size={12} className="transition-opacity" />
+                  <span className={clsx(
+                    'text-[9px] md:text-[10px]',
+                    'tracking-[0.2em] uppercase font-light',
+                    'transition-opacity',
+                  )}>
+                    Back
+                  </span>
+                </a>
+                <div className="h-[10px] w-[1px] bg-gray-400 dark:bg-gray-600 mr-4" />
                 <AppViewSwitcher
                   currentSelection={switcherSelectionForPath()}
                   className="translate-x-[-1px]"

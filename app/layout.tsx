@@ -34,6 +34,7 @@ import { PATH_FEED_JSON, PATH_RSS_XML } from '@/app/path';
 import SelectPhotosProvider from '@/admin/select/SelectPhotosProvider';
 import AdminBatchEditPanel from '@/admin/select/AdminBatchEditPanel';
 import Script from 'next/script';
+import CustomCursor from '@/components/CustomCursor';
 
 import '../tailwind.css';
 
@@ -101,7 +102,10 @@ export default function RootLayout({
       <body className={clsx(
         // Center on large screens
         '3xl:flex flex-col items-center',
+        // Custom cursor
+        'cursor-none',
       )}>
+        <CustomCursor />
         <AppStateProvider areAdminDebugToolsEnabled={ADMIN_DEBUG_TOOLS_ENABLED}>
           <AppTextProvider>
             <SelectPhotosProvider>
