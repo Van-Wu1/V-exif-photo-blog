@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import AppGrid from '../components/AppGrid';
 import AppViewSwitcher, { SwitcherSelection } from '@/app/AppViewSwitcher';
+import ThemeSwitcher from '@/app/ThemeSwitcher';
 import {
   PATH_ROOT,
   isPathAdmin,
@@ -71,49 +72,68 @@ export default function NavClient({
   };
 
   return (
-    <AppGrid
-      className={classNameStickyContainer}
-      classNameMain='pointer-events-auto'
-      contentMain={
-        <AnimateItems
-          animateOnFirstLoadOnly
-          type={animate && !isPathAdmin(pathname) ? 'bottom' : 'none'}
-          distanceOffset={10}
-          items={showNav
-            ? [<nav
-              key="nav"
-              ref={ref}
-              className={clsx(
-                'w-full flex items-center bg-main',
-                NAV_HEIGHT_CLASS,
-                // Enlarge nav to ensure it fully masks underlying content
-                'md:w-[calc(100%+8px)] md:translate-x-[-4px] md:px-[4px]',
-                classNameStickyNav,
-              )}>
-              <AppViewSwitcher
-                currentSelection={switcherSelectionForPath()}
-                className="translate-x-[-1px]"
-                animate={hasLoadedWithAnimations && isNavVisible}
-              />
-              <div className={clsx(
-                'grow text-right min-w-0',
-                'translate-y-[-1px]',
-              )}>
-                <div className="truncate overflow-hidden select-none">
-                  {renderLink(navTitle, PATH_ROOT)}
+    <>
+      <AppGrid
+        className={classNameStickyContainer}
+        classNameMain='pointer-events-auto'
+        contentMain={
+          <AnimateItems
+            animateOnFirstLoadOnly
+            type={animate && !isPathAdmin(pathname) ? 'bottom' : 'none'}
+            distanceOffset={10}
+            items={showNav
+              ? [<nav
+                key="nav"
+                ref={ref}
+                className={clsx(
+                  'w-full flex items-center bg-main',
+                  NAV_HEIGHT_CLASS,
+                  // Enlarge nav to ensure it fully masks underlying content
+                  'md:w-[calc(100%+8px)] md:translate-x-[-4px] md:px-[4px]',
+                  'relative',
+                  classNameStickyNav,
+                )}>
+                <AppViewSwitcher
+                  currentSelection={switcherSelectionForPath()}
+                  className="translate-x-[-1px]"
+                  animate={hasLoadedWithAnimations && isNavVisible}
+                />
+                <div className={clsx(
+                  'grow text-right min-w-0',
+                  'translate-y-[-1px]',
+                  // Add padding-right to prevent overlap with theme switcher
+                  // Theme switcher has 3 buttons × 42px = 126px
+                  'pr-[130px]',
+                )}>
+                  <div className="truncate overflow-hidden select-none">
+                    {renderLink(navTitle, PATH_ROOT)}
+                  </div>
+                  {navCaption &&
+                    <div className={clsx(
+                      'hidden sm:block truncate overflow-hidden',
+                      'leading-tight text-dim',
+                    )}>
+                      {navCaption}
+                    </div>}
                 </div>
-                {navCaption &&
-                  <div className={clsx(
-                    'hidden sm:block truncate overflow-hidden',
-                    'leading-tight text-dim',
-                  )}>
-                    {navCaption}
-                  </div>}
-              </div>
-            </nav>]
-            : []}
-        />
-      }
-    />
+              </nav>]
+              : []}
+          />
+        }
+      />
+      {/* Theme switcher fixed to top-right corner */}
+      {showNav && (
+        <div className={clsx(
+          'fixed top-0 right-0',
+          'flex items-center',
+          NAV_HEIGHT_CLASS,
+          'z-50',
+          // Match layout container margins: mx-3 lg:mx-6
+          'mr-3 lg:mr-6',
+        )}>
+          <ThemeSwitcher />
+        </div>
+      )}
+    </>
   );
 };

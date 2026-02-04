@@ -8,6 +8,7 @@ export const {
   signOut,
   auth,
 } = NextAuth({
+  secret: process.env.AUTH_SECRET || (process.env.NODE_ENV === 'development' ? 'dev-secret-key-for-local-development-only' : undefined),
   providers: [
     Credentials({
       async authorize({ email, password }) {
