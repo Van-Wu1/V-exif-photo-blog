@@ -36,10 +36,12 @@ export default function AppViewSwitcher({
   currentSelection,
   className,
   animate = true,
+  showSearch = true,
 }: {
   currentSelection?: SwitcherSelection
   className?: string
   animate?: boolean
+  showSearch?: boolean
 }) {
   const pathname = usePathname();
   
@@ -222,18 +224,20 @@ export default function AppViewSwitcher({
             />}
         </Switcher>
       </motion.div>
-      <Switcher type="borderless">
-        <SwitcherItem
-          icon={<IconSearch includeTitle={false} />}
-          onClick={() => setIsCommandKOpen?.(true)}
-          tooltip={{...SHOW_KEYBOARD_SHORTCUT_TOOLTIPS && {
-            content: appText.nav.search,
-            keyCommandModifier: KEY_COMMANDS.search[0],
-            keyCommand: KEY_COMMANDS.search[1],
-          }}}
-          width="narrow"
-        />
-      </Switcher>
+      {showSearch && (
+        <Switcher type="borderless">
+          <SwitcherItem
+            icon={<IconSearch includeTitle={false} />}
+            onClick={() => setIsCommandKOpen?.(true)}
+            tooltip={{...SHOW_KEYBOARD_SHORTCUT_TOOLTIPS && {
+              content: appText.nav.search,
+              keyCommandModifier: KEY_COMMANDS.search[0],
+              keyCommand: KEY_COMMANDS.search[1],
+            }}}
+            width="narrow"
+          />
+        </Switcher>
+      )}
     </div>
   );
 }
