@@ -39,7 +39,14 @@ export default function AdminUploadsClient({
   const [isDeleting, setIsDeleting] = useState(false);
 
   return (
-    <div className="space-y-4">
+    <div className="darkroom-ingest-workspace space-y-4">
+      <div className="darkroom-ingest-heading">
+        <div>
+          <span>INGEST QUEUE</span>
+          <strong>Review staged photographs</strong>
+        </div>
+        <span>{urlAddStatuses.length} STAGED</span>
+      </div>
       {(urls.length > 1 || isAdding) &&
         <AdminBatchUploadActions {...{
           uploadUrls,

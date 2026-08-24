@@ -19,7 +19,7 @@ export default function AdminUploadsTable({
 }) {
   const isComplete = urlAddStatuses.every(({ status }) => status === 'added');
   return (
-    <div className="space-y-4">
+    <div className="darkroom-upload-queue space-y-4">
       {urlAddStatuses.map((status, index) =>
         <AdminUploadsTableRow
           key={status.url}

@@ -35,6 +35,7 @@ import SelectPhotosProvider from '@/admin/select/SelectPhotosProvider';
 import AdminBatchEditPanel from '@/admin/select/AdminBatchEditPanel';
 import Script from 'next/script';
 import CustomCursor from '@/components/CustomCursor';
+import DarkroomAtmosphere from '@/app/DarkroomAtmosphere';
 
 import '../tailwind.css';
 
@@ -105,6 +106,7 @@ export default function RootLayout({
         // Custom cursor
         'cursor-none',
       )}>
+        <DarkroomAtmosphere />
         <CustomCursor />
         <AppStateProvider areAdminDebugToolsEnabled={ADMIN_DEBUG_TOOLS_ENABLED}>
           <AppTextProvider>
@@ -114,6 +116,7 @@ export default function RootLayout({
                 <SwrConfigClient>
                   <SharedHoverProvider>
                     <div className={clsx(
+                      'site-shell',
                       'mx-3 mb-3',
                       'lg:mx-6 lg:mb-6',
                     )}>

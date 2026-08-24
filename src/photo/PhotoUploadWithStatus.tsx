@@ -85,12 +85,13 @@ export default function PhotoUploadWithStatus({
   return (
     <div className={clsx(
       'flex items-center gap-4',
+      showButton && 'darkroom-upload-launch',
       isUploading && 'cursor-not-allowed',
       className,
     )}>
       <div className={clsx(
         showButton ? 'flex' : 'hidden',
-        'items-center',
+        'items-center w-full',
       )}>
         <ImageInput
           ref={inputRef}
@@ -150,7 +151,9 @@ export default function PhotoUploadWithStatus({
           debug={debug}
         />
       </div>
-      {showStatusText && <div className={clsx(
+      {showStatusText && (isUploading || uploadError || !showButton) &&
+      <div className={clsx(
+        'darkroom-upload-status',
         'flex items-center gap-4 overflow-hidden',
       )}>
         {isUploading && !showButton &&
@@ -184,6 +187,19 @@ export default function PhotoUploadWithStatus({
                 </>
               : !showButton && <>Initializing</>}
           </span>}
+        {isUploading && filesLength > 0 &&
+          <div
+            className="darkroom-upload-progress"
+            role="progressbar"
+            aria-label="Upload progress"
+            aria-valuemin={0}
+            aria-valuemax={filesLength}
+            aria-valuenow={fileUploadIndex + 1}
+          >
+            <span style={{
+              width: `${((fileUploadIndex + 1) / filesLength) * 100}%`,
+            }} />
+          </div>}
       </div>}
       {debug && debugDownload &&
         <a

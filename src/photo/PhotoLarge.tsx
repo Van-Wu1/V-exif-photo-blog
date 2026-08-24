@@ -154,6 +154,7 @@ export default function PhotoLarge({
   });
 
   const tags = sortTagsArray(photo.tags, primaryTag);
+  const archiveId = photo.id.toUpperCase();
 
   const camera = cameraFromPhoto(photo);
   const lens = lensFromPhoto(photo);
@@ -219,7 +220,10 @@ export default function PhotoLarge({
       arePhotosMatted && 'h-[90%]',
       arePhotosMatted && matteContentWidthForAspectRatio,
       // For portrait photos, center them nicely
-      !arePhotosMatted && isPortrait && 'flex items-center justify-center min-h-[60vh]',
+      !arePhotosMatted && isPortrait && clsx(
+        'flex items-center justify-center',
+        'min-h-[60vh]',
+      ),
     )}>
       <ZoomControls
         ref={refZoomControls}
@@ -284,6 +288,7 @@ export default function PhotoLarge({
     }} />;
 
   const largePhotoContainerClassName = clsx(
+    'darkroom-photo-frame',
     arePhotosMatted && 'flex items-center justify-center aspect-3/2',
     // Matte theme colors defined in root layout
     arePhotosMatted && (MATTE_COLOR
@@ -312,18 +317,26 @@ export default function PhotoLarge({
         >
           {renderLargePhoto}
         </Link>}
-      classNameSide="relative"
+      classNameSide="relative darkroom-photo-sidebar"
       sideHiddenOnMobile={false}
       contentSide={
         <div className="md:absolute inset-0 -mt-1">
           <MaskedScroll className="sticky top-4 self-start">
             <DivDebugBaselineGrid className={clsx(
+              'darkroom-photo-meta-grid',
               'grid grid-cols-2 md:grid-cols-1',
               'gap-x-0.5 sm:gap-x-1 gap-y-baseline',
               'mb-6 md:mb-4',
             )}>
+              <div className={clsx(
+                'darkroom-archive-heading',
+                'col-span-2 md:col-span-1',
+              )}>
+                <span>PLATE {archiveId}</span>
+                <span>REC / ARCHIVE</span>
+              </div>
               {/* Meta */}
-              <div className="pr-3 md:pr-0">
+              <div className="pr-3 md:pr-0 darkroom-meta-section">
                 <div className="float-end hidden md:block">
                   {renderAdminMenu}
                 </div>
@@ -343,20 +356,23 @@ export default function PhotoLarge({
                   ) &&
                     <div>
                       {(showCameraContent || showLensContent) &&
-                        <div className="flex flex-col *:self-start">
-                          {showCameraContent &&
-                            <PhotoCamera
-                              camera={camera}
-                              contrast="medium"
-                              prefetch={prefetchRelatedLinks}
-                            />}
-                          {showLensContent &&
-                            <PhotoLens
-                              lens={lens}
-                              contrast="medium"
-                              prefetch={prefetchRelatedLinks}
-                            />}
-                        </div>}
+                          <div className="darkroom-meta-block">
+                            <div className="darkroom-meta-label">OPTICS</div>
+                            <div className="flex flex-col *:self-start">
+                              {showCameraContent &&
+                              <PhotoCamera
+                                camera={camera}
+                                contrast="medium"
+                                prefetch={prefetchRelatedLinks}
+                              />}
+                              {showLensContent &&
+                              <PhotoLens
+                                lens={lens}
+                                contrast="medium"
+                                prefetch={prefetchRelatedLinks}
+                              />}
+                            </div>
+                          </div>}
                       {showRecipeContent && recipeTitle &&
                         <PhotoRecipe
                           ref={refPhotoRecipe}
@@ -377,6 +393,7 @@ export default function PhotoLarge({
               </div>
               {/* EXIF Data */}
               <div className={clsx(
+                'darkroom-meta-section',
                 'space-y-baseline',
                 !hasTitleContent && !hasMetaContent && 'md:-mt-baseline',
               )}>
@@ -385,9 +402,11 @@ export default function PhotoLarge({
                 </div>
                 {showExifContent &&
                   <>
-                    <ul className="text-medium">
+                    <div className="darkroom-meta-label">EXPOSURE</div>
+                    <ul className="darkroom-exif-list text-medium">
                       <li>
-                        {photo.focalLength &&
+                        <span>FOCAL LENGTH</span>
+                        <span>{photo.focalLength &&
                           <Link
                             href={pathForFocalLength(photo.focalLength)}
                             className="hover:text-main active:text-medium"
@@ -417,11 +436,23 @@ export default function PhotoLarge({
                               </span>
                             </Tooltip>
                           </>}
+                        </span>
                       </li>
-                      <li>{photo.fNumberFormatted}</li>
-                      <li>{photo.exposureTimeFormatted}</li>
-                      <li>{photo.isoFormatted}</li>
-                      <li>{photo.exposureCompensationFormatted ?? '0ev'}</li>
+                      <li>
+                        <span>APERTURE</span>
+                        <span>{photo.fNumberFormatted}</span>
+                      </li>
+                      <li>
+                        <span>SHUTTER SPEED</span>
+                        <span>{photo.exposureTimeFormatted}</span>
+                      </li>
+                      <li><span>ISO</span><span>{photo.isoFormatted}</span></li>
+                      <li>
+                        <span>EXPOSURE COMP.</span>
+                        <span>
+                          {photo.exposureCompensationFormatted ?? '0ev'}
+                        </span>
+                      </li>
                     </ul>
                     {showFilmContent && photo.film &&
                       <PhotoFilm
@@ -440,18 +471,21 @@ export default function PhotoLarge({
                   'md:flex-col flex-wrap',
                   'md:justify-normal',
                 )}>
-                  <PhotoDate
-                    photo={photo}
-                    className={clsx(
-                      'text-medium',
-                      // Prevent collision with admin button
-                      !hasNonDateContent && isUserSignedIn && 'md:pr-7',
-                    )}
-                    // 'createdAt' is a naive datetime which does not require
-                    // a timezone and will not cause server/client mismatch
-                    timezone={null}
-                    hideTime={!SHOW_TAKEN_AT_TIME}
-                  />
+                  <div className="darkroom-capture-block">
+                    <div className="darkroom-meta-label">DATE CAPTURED</div>
+                    <PhotoDate
+                      photo={photo}
+                      className={clsx(
+                        'text-medium',
+                        // Prevent collision with admin button
+                        !hasNonDateContent && isUserSignedIn && 'md:pr-7',
+                      )}
+                      // 'createdAt' is a naive datetime which does not require
+                      // a timezone and will not cause server/client mismatch
+                      timezone={null}
+                      hideTime={!SHOW_TAKEN_AT_TIME}
+                    />
+                  </div>
                   <div className={clsx(
                     'flex gap-1 translate-y-[0.5px]',
                     'translate-x-[-2.5px]',
@@ -504,6 +538,10 @@ export default function PhotoLarge({
                         photo={photo} 
                       />}
                   </div>
+                </div>
+                <div className="darkroom-archive-footer">
+                  <span>ARCHIVE 03</span>
+                  <span>RECORD {archiveId}</span>
                 </div>
               </div>
             </DivDebugBaselineGrid>

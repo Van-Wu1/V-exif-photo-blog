@@ -134,7 +134,10 @@ export default function AdminBatchUploadActions({
     <>
       {actionErrorMessage &&
         <ErrorNote>{actionErrorMessage}</ErrorNote>}
-      <Container padding="tight" className="p-2! sm:p-3! relative z-10">
+      <Container
+        padding="tight"
+        className="darkroom-batch-panel p-2! sm:p-3! relative z-10"
+      >
         <div className="w-full space-y-4">
           <div className="flex">
             <div className="grow text-main">

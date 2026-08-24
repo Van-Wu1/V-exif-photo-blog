@@ -76,6 +76,7 @@ export default function AdminUploadsTableRow({
       ref={ref}
       className={clsx(
         'flex items-center grow',
+        'darkroom-upload-row',
         'transition-opacity',
         'rounded-lg overflow-hidden',
         'border-medium bg-extra-dim',
@@ -84,6 +85,7 @@ export default function AdminUploadsTableRow({
     >
       <div className={clsx(
         'self-stretch',
+        'darkroom-upload-preview',
         'w-[40%] sm:w-auto shrink-0',
         'transition-transform',
       )}>
@@ -101,6 +103,7 @@ export default function AdminUploadsTableRow({
         />
       </div>
       <div className={clsx(
+        'darkroom-upload-row-content',
         'flex self-stretch w-full min-w-0',
         'gap-2 sm:gap-3',
         'p-2 sm:p-3',
