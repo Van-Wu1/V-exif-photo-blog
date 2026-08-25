@@ -16,7 +16,13 @@ export default function DarkroomPhotoStage({ photo }: { photo: Photo }) {
   const lens = [photo.lensMake, photo.lensModel].filter(Boolean).join(' ');
 
   return (
-    <section
+    <>
+      <link
+        rel="preload"
+        as="image"
+        href="/darkroom/detail-background-16x9-v2.webp"
+      />
+      <section
       className="darkroom-stage darkroom-detail-stage"
       aria-label={`Darkroom view of ${titleForPhoto(photo)}`}
     >
@@ -65,6 +71,7 @@ export default function DarkroomPhotoStage({ photo }: { photo: Photo }) {
           {photo.id.toUpperCase()}
         </footer>
       </aside>
-    </section>
+      </section>
+    </>
   );
 }

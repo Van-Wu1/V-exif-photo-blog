@@ -5,18 +5,29 @@ import { Photo } from '.';
 import PhotoMedium from './PhotoMedium';
 
 const CARD_PLACEMENTS = [
-  { left: '48.5%', top: '35%', width: '22%', rotate: '5deg', featured: true },
-  { left: '12%', top: '22%', width: '18%', rotate: '-10deg', featured: false },
-  { left: '30%', top: '42%', width: '20%', rotate: '9deg', featured: false },
-  { left: '64%', top: '20%', width: '18%', rotate: '11deg', featured: false },
-  { left: '73%', top: '48%', width: '18%', rotate: '-9deg', featured: false },
-  { left: '8%', top: '55%', width: '18%', rotate: '-12deg', featured: false },
-  { left: '38%', top: '67%', width: '19%', rotate: '-8deg', featured: false },
+  { left: '49%', top: '52%', width: '21%', rotate: '5deg', featured: true },
+  { left: '17%', top: '35%', width: '18%', rotate: '-10deg', featured: false },
+  { left: '34%', top: '53%', width: '19%', rotate: '9deg', featured: false },
+  { left: '67%', top: '34%', width: '18%', rotate: '11deg', featured: false },
+  { left: '79%', top: '59%', width: '18%', rotate: '-9deg', featured: false },
+  { left: '11%', top: '67%', width: '18%', rotate: '-12deg', featured: false },
+  { left: '44%', top: '77%', width: '19%', rotate: '-8deg', featured: false },
 ] as const;
 
 export default function DarkroomHomeStage({ photos }: { photos: Photo[] }) {
   return (
-    <section className="darkroom-stage darkroom-home-stage" aria-label="Photographs">
+    <>
+      <link
+        rel="preload"
+        as="image"
+        href="/darkroom/home-background-16x9-v1.webp"
+      />
+      <link
+        rel="preload"
+        as="image"
+        href="/darkroom/slide-mount-v1.webp"
+      />
+      <section className="darkroom-stage darkroom-home-stage" aria-label="Photographs">
       <div className="darkroom-home-heading">PHOTOGRAPHS</div>
       <div className="darkroom-home-cards">
         {photos.slice(0, CARD_PLACEMENTS.length).map((photo, index) => {
@@ -52,6 +63,7 @@ export default function DarkroomHomeStage({ photos }: { photos: Photo[] }) {
           );
         })}
       </div>
-    </section>
+      </section>
+    </>
   );
 }
