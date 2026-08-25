@@ -36,7 +36,11 @@ export default function DarkroomHomeStage({ photos }: { photos: Photo[] }) {
       ];
     }
 
-    setVisiblePhotos(shuffledPhotos.slice(0, CARD_PLACEMENTS.length));
+    const frame = window.requestAnimationFrame(() => {
+      setVisiblePhotos(shuffledPhotos.slice(0, CARD_PLACEMENTS.length));
+    });
+
+    return () => window.cancelAnimationFrame(frame);
   }, [photos]);
 
   return (
@@ -67,6 +71,12 @@ export default function DarkroomHomeStage({ photos }: { photos: Photo[] }) {
         >
           {visiblePhotos.map((photo, index) => {
             const placement = CARD_PLACEMENTS[index];
+            const verticalPosition = Number.parseFloat(placement.top);
+            const depth = verticalPosition < 40
+              ? 'far'
+              : verticalPosition < 65
+                ? 'middle'
+                : 'near';
             const orientation = photo.aspectRatio < 1
               ? 'portrait'
               : 'landscape';
@@ -74,14 +84,19 @@ export default function DarkroomHomeStage({ photos }: { photos: Photo[] }) {
               left: placement.left,
               top: placement.top,
               width: placement.width,
-              transform: `translate(-50%, -50%) rotate(${placement.rotate})`,
-              zIndex: index + 1,
+              transform: [
+                'translate(-50%, -50%)',
+                `rotate(${placement.rotate})`,
+                'scale(var(--depth-scale))',
+              ].join(' '),
+              zIndex: Math.round(verticalPosition),
             };
 
             return (
               <article
                 key={photo.id}
                 className="darkroom-home-card"
+                data-depth={depth}
                 data-orientation={orientation}
                 style={style}
               >
