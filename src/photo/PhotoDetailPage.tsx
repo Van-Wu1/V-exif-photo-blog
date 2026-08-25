@@ -18,6 +18,7 @@ import { AI_CONTENT_GENERATION_ENABLED } from '@/app/config';
 import YearHeader from '@/year/YearHeader';
 import RecentsHeader from '@/recents/RecentsHeader';
 import AlbumHeader from '@/album/AlbumHeader';
+import PhotoDetailExperience from './PhotoDetailExperience';
 
 export default function PhotoDetailPage({
   photo,
@@ -139,7 +140,8 @@ export default function PhotoDetailPage({
   }
 
   return (
-    <div>
+    <PhotoDetailExperience photo={photo}>
+      <div>
       <AppGrid
         className="mt-1.5 mb-6"
         contentMain={customHeader ?? <PhotoHeader
@@ -195,6 +197,7 @@ export default function PhotoDetailPage({
           animateOnFirstLoadOnly
         />}
       />
-    </div>
+      </div>
+    </PhotoDetailExperience>
   );
 }

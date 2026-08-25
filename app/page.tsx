@@ -10,6 +10,7 @@ import PhotoGridPage from '@/photo/PhotoGridPage';
 import { getDataForCategoriesCached } from '@/category/cache';
 import { getPhotosMetaCached } from '@/photo/cache';
 import { FEED_META_QUERY_OPTIONS, getFeedQueryOptions } from '@/feed';
+import HomeExperience from '@/photo/HomeExperience';
 
 export const dynamic = 'force-static';
 export const maxDuration = 60;
@@ -44,8 +45,7 @@ export default async function HomePage() {
       : NULL_CATEGORY_DATA,
   ]);
 
-  return (
-    photos.length > 0
+  const classicExperience = photos.length > 0
       ? GRID_HOMEPAGE_ENABLED
         ? <PhotoGridPage
           {...{
@@ -61,6 +61,11 @@ export default async function HomePage() {
           photosCount,
           ...USER_DEFAULT_SORT_OPTIONS,
         }} />
-      : <PhotosEmptyState />
+      : <PhotosEmptyState />;
+
+  return (
+    <HomeExperience photos={photos}>
+      {classicExperience}
+    </HomeExperience>
   );
 }

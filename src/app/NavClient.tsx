@@ -6,6 +6,7 @@ import Link from 'next/link';
 import AppGrid from '../components/AppGrid';
 import AppViewSwitcher, { SwitcherSelection } from '@/app/AppViewSwitcher';
 import ThemeSwitcher from '@/app/ThemeSwitcher';
+import VisualExperienceSwitcher from '@/app/VisualExperienceSwitcher';
 import {
   PATH_ROOT,
   isPathAdmin,
@@ -168,6 +169,8 @@ export default function NavClient({
                   </Switcher>
                   {/* Spacer to push theme switcher to the right */}
                   <div className="grow" />
+                  <VisualExperienceSwitcher />
+                  <div className="w-2" />
                   {/* Theme Switcher - Right aligned */}
                   <ThemeSwitcher />
                 </div>
@@ -206,7 +209,7 @@ export default function NavClient({
                     'translate-y-[-1px]',
                     // Add padding-right to prevent overlap with theme switcher
                     // Theme switcher has 3 buttons × 42px = 126px
-                    'pr-[130px]',
+                    'pr-[230px]',
                   )}>
                     <div className="truncate overflow-hidden select-none">
                       {renderLink(navTitle, PATH_ROOT)}
@@ -230,6 +233,8 @@ export default function NavClient({
                     // Ensure it's above other content
                     'z-50',
                   )}>
+                    <VisualExperienceSwitcher />
+                    <div className="w-2" />
                     <ThemeSwitcher />
                   </div>
                 </div>
