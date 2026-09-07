@@ -5,7 +5,9 @@ not need photo records or storage credentials. The existing homepage still
 performs its normal server queries before selecting the client presentation.
 
 The study uses a fixed perspective camera, a shallow table slab, deterministic
-microtexture, a warm spotlight and a weak red safelight. It renders on mount
+fibre and wear texture, a warm spotlight and a weak red safelight. Peripheral
+lenses, a film tin and a mechanical timer establish scale and context, with
+contact shadows and a restrained rim light. It renders on mount
 and resize, with no continuous animation loop. Pixel ratio is capped at 1.5.
 Three.js loads only when this presentation mounts. There are no photos yet.
 

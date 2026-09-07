@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 import styles from './table.module.css';
 import { useVisualExperience } from '@/app/VisualExperienceProvider';
+import { addDarkroomProps, makeTableTexture } from './setDressing';
+import type { BufferGeometry, Material } from 'three';
 
 export default function DarkroomTable() {
   const host = useRef<HTMLDivElement>(null);
@@ -29,6 +31,8 @@ export default function DarkroomTable() {
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure = 1.15;
       renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
       element.appendChild(renderer.domElement);
 
       const scene = new THREE.Scene();
@@ -38,30 +42,12 @@ export default function DarkroomTable() {
       camera.position.set(0, 7.6, 8.8);
       camera.lookAt(0, 0, -0.8);
 
-      // Neutral, deterministic microtexture: illumination belongs to the lights.
-      const grain = document.createElement('canvas');
-      grain.width = grain.height = 512;
-      const context = grain.getContext('2d');
-      if (!context) throw new Error('Texture canvas unavailable');
-      const pixels = context.createImageData(512, 512);
-      let seed = 9137;
-      for (let i = 0; i < pixels.data.length; i += 4) {
-        seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
-        const value = 80 + (seed >>> 24) * 0.32;
-        pixels.data[i] = value;
-        pixels.data[i + 1] = value;
-        pixels.data[i + 2] = value;
-        pixels.data[i + 3] = 255;
-      }
-      context.putImageData(pixels, 0, 0);
-      const texture = new THREE.CanvasTexture(grain);
-      texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-      texture.repeat.set(9, 7);
+      const texture = makeTableTexture();
       texture.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy());
 
       const topMaterial = new THREE.MeshStandardMaterial({
-        color: '#5b5145', roughness: 0.87, metalness: 0.08,
-        bumpMap: texture, bumpScale: 0.024, roughnessMap: texture,
+        color: '#817361', roughness: 0.82, metalness: 0.08,
+        map: texture, bumpMap: texture, bumpScale: 0.045,
       });
       const edgeMaterial = new THREE.MeshStandardMaterial({
         color: '#28221b', roughness: 0.72, metalness: 0.15,
@@ -72,7 +58,9 @@ export default function DarkroomTable() {
           edgeMaterial, edgeMaterial],
       );
       tabletop.position.set(0, -0.11, -1.8);
+      tabletop.receiveShadow = true;
       scene.add(tabletop);
+      const propTextures = addDarkroomProps(scene);
 
       const floor = new THREE.Mesh(
         new THREE.PlaneGeometry(60, 60),
@@ -86,10 +74,18 @@ export default function DarkroomTable() {
       const light = new THREE.SpotLight('#ffe0b3', 100, 22, 0.64, 0.92, 2);
       light.position.set(-2.8, 5.6, 3.2);
       light.target.position.set(0, 0, 0.7);
+      light.castShadow = true;
+      light.shadow.mapSize.set(1024, 1024);
+      light.shadow.normalBias = 0.025;
+      light.shadow.bias = -0.0001;
       scene.add(light, light.target);
       const safelight = new THREE.PointLight('#c52a16', 5, 10, 2);
-      safelight.position.set(3.8, 1.6, -6);
+      safelight.position.set(1.8, 1.6, -7.4);
       scene.add(safelight);
+      // Restrained rim illumination lets the peripheral tools read in shadow.
+      const rimLight = new THREE.DirectionalLight('#c9b79b', 0.65);
+      rimLight.position.set(-5, 4, -4);
+      scene.add(rimLight);
 
       const render = () => renderer.render(scene, camera);
       const resize = () => {
@@ -114,12 +110,21 @@ export default function DarkroomTable() {
       cleanup = () => {
         observer.disconnect();
         renderer.domElement.removeEventListener('webglcontextlost', contextLost);
-        tabletop.geometry.dispose();
-        floor.geometry.dispose();
-        floor.material.dispose();
-        topMaterial.dispose();
-        edgeMaterial.dispose();
+        const geometries = new Set<BufferGeometry>();
+        const materials = new Set<Material>();
+        scene.traverse(object => {
+          if (object instanceof THREE.Mesh) {
+            geometries.add(object.geometry);
+            const list = Array.isArray(object.material)
+              ? object.material : [object.material];
+            list.forEach(material => materials.add(material));
+          }
+        });
+        geometries.forEach(geometry => geometry.dispose());
+        materials.forEach(material => material.dispose());
         texture.dispose();
+        propTextures.forEach(propTexture => propTexture.dispose());
+        light.shadow.dispose();
         renderer.dispose();
         renderer.domElement.remove();
       };
