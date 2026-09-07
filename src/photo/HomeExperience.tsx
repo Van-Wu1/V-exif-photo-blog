@@ -4,6 +4,11 @@ import { ReactNode } from 'react';
 import { Photo } from '.';
 import { useVisualExperience } from '@/app/VisualExperienceProvider';
 import DarkroomHomeStage from './DarkroomHomeStage';
+import dynamic from 'next/dynamic';
+
+const DarkroomTable = dynamic(() => import('./darkroom3d/DarkroomTable'), {
+  ssr: false,
+});
 
 export default function HomeExperience({
   photos,
@@ -12,7 +17,9 @@ export default function HomeExperience({
   photos: Photo[]
   children: ReactNode
 }) {
-  const { isDarkroomExperience } = useVisualExperience();
+  const { experience, isDarkroomExperience } = useVisualExperience();
+
+  if (experience === 'darkroom3d') return <DarkroomTable />;
 
   return isDarkroomExperience
     ? <DarkroomHomeStage photos={photos} />

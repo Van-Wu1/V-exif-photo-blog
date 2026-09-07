@@ -1,4 +1,4 @@
-export const VISUAL_EXPERIENCES = ['classic', 'darkroom'] as const;
+export const VISUAL_EXPERIENCES = ['classic', 'darkroom', 'darkroom3d'] as const;
 
 export type VisualExperience = typeof VISUAL_EXPERIENCES[number];
 
@@ -15,4 +15,3 @@ export const parseVisualExperience = (
   value: string | null | undefined,
 ): VisualExperience | undefined =>
   VISUAL_EXPERIENCES.find(experience => experience === value);
-
