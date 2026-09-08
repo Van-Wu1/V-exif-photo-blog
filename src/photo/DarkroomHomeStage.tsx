@@ -6,40 +6,40 @@ import PhotoMedium from './PhotoMedium';
 
 const CARD_PLACEMENTS = [
   {
-    left: '18%', top: '27%', width: '10.5%', rotate: '-9deg',
-    mobileLeft: '14%', mobileTop: '24%', mobileWidth: '27%',
+    left: '32%', top: '34%', width: '7.8%', rotate: '-9deg',
+    mobileLeft: '25%', mobileTop: '27%', mobileWidth: '22%',
   },
   {
-    left: '48%', top: '29%', width: '10.2%', rotate: '7deg',
-    mobileLeft: '50%', mobileTop: '21%', mobileWidth: '25%',
+    left: '49%', top: '31%', width: '7.5%', rotate: '7deg',
+    mobileLeft: '50%', mobileTop: '24%', mobileWidth: '21%',
   },
   {
-    left: '80%', top: '28%', width: '10.6%', rotate: '-6deg',
-    mobileLeft: '86%', mobileTop: '26%', mobileWidth: '28%',
+    left: '65%', top: '36%', width: '7.9%', rotate: '-6deg',
+    mobileLeft: '75%', mobileTop: '29%', mobileWidth: '22%',
   },
   {
-    left: '23%', top: '52%', width: '13.2%', rotate: '8deg',
-    mobileLeft: '12%', mobileTop: '49%', mobileWidth: '34%',
+    left: '28%', top: '54%', width: '9.7%', rotate: '8deg',
+    mobileLeft: '25%', mobileTop: '49%', mobileWidth: '27%',
   },
   {
-    left: '52%', top: '50%', width: '15.4%', rotate: '-4deg',
-    mobileLeft: '52%', mobileTop: '47%', mobileWidth: '38%',
+    left: '49%', top: '51%', width: '10.8%', rotate: '-4deg',
+    mobileLeft: '50%', mobileTop: '46%', mobileWidth: '30%',
   },
   {
-    left: '79%', top: '55%', width: '13.5%', rotate: '9deg',
-    mobileLeft: '91%', mobileTop: '53%', mobileWidth: '35%',
+    left: '69%', top: '57%', width: '9.8%', rotate: '9deg',
+    mobileLeft: '75%', mobileTop: '52%', mobileWidth: '27%',
   },
   {
-    left: '6%', top: '86%', width: '17.5%', rotate: '-11deg',
-    mobileLeft: '0%', mobileTop: '83%', mobileWidth: '46%',
+    left: '32%', top: '76%', width: '11.5%', rotate: '-11deg',
+    mobileLeft: '25%', mobileTop: '73%', mobileWidth: '32%',
   },
   {
-    left: '43%', top: '81%', width: '16.2%', rotate: '6deg',
-    mobileLeft: '49%', mobileTop: '77%', mobileWidth: '43%',
+    left: '51%', top: '73%', width: '11.2%', rotate: '6deg',
+    mobileLeft: '50%', mobileTop: '70%', mobileWidth: '31%',
   },
   {
-    left: '85%', top: '87%', width: '18%', rotate: '-8deg',
-    mobileLeft: '101%', mobileTop: '86%', mobileWidth: '48%',
+    left: '68%', top: '80%', width: '12%', rotate: '-8deg',
+    mobileLeft: '75%', mobileTop: '77%', mobileWidth: '33%',
   },
 ] as const;
 
