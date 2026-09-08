@@ -624,10 +624,10 @@ html[data-visual-experience='darkroom'] .visual-experience-switcher {
   background:
     linear-gradient(
       to bottom,
-      rgb(0 0 0 / 0.52) 0%,
-      rgb(0 0 0 / 0.3) 30%,
-      rgb(0 0 0 / 0.08) 55%,
-      transparent 72%
+      rgb(0 0 0 / 0.34) 0%,
+      rgb(0 0 0 / 0.18) 31%,
+      rgb(0 0 0 / 0.04) 58%,
+      transparent 76%
     ),
     radial-gradient(
       ellipse at 52% 54%,
@@ -654,13 +654,28 @@ html[data-visual-experience='darkroom'] .visual-experience-switcher {
   position: absolute;
   inset: 0;
   z-index: 2;
+  perspective: clamp(54rem, 72vw, 92rem);
+  perspective-origin: 50% 16%;
+}
+
+.darkroom-home-plane {
+  position: absolute;
+  inset: -5% -3% -12%;
+  transform: rotateX(15deg);
+  transform-origin: 50% 17%;
+  transform-style: preserve-3d;
 }
 
 .darkroom-home-card {
   position: absolute;
   isolation: isolate;
   transform-origin: 50% 50%;
+  transform:
+    translate3d(-50%, -50%, 0.1px)
+    rotateZ(var(--darkroom-card-rotation));
+  backface-visibility: hidden;
   transition: z-index 0s 520ms;
+  will-change: transform;
 }
 
 .darkroom-home-card::before {
@@ -733,8 +748,18 @@ html[data-visual-experience='darkroom'] .visual-experience-switcher {
   z-index: 2;
   pointer-events: none;
   filter:
-    drop-shadow(0 0.12rem 0.11rem rgb(0 0 0 / 0.9))
-    drop-shadow(0 0.42rem 0.5rem rgb(0 0 0 / 0.58));
+    drop-shadow(
+      0
+      calc(0.08rem + var(--darkroom-card-depth) * 0.18rem)
+      calc(0.1rem + var(--darkroom-card-depth) * 0.16rem)
+      rgb(0 0 0 / 0.92)
+    )
+    drop-shadow(
+      calc(-0.08rem - var(--darkroom-card-depth) * 0.14rem)
+      calc(0.28rem + var(--darkroom-card-depth) * 0.42rem)
+      calc(0.34rem + var(--darkroom-card-depth) * 0.36rem)
+      rgb(0 0 0 / 0.62)
+    );
 }
 
 .darkroom-home-card[data-orientation='landscape'] .darkroom-home-card-surface::before {
@@ -1331,6 +1356,36 @@ html[data-visual-experience='darkroom'] .darkroom-photo-frame::after {
 }
 
 @media (max-width: 767px) {
+  .darkroom-stage {
+    height: 100svh;
+    min-height: 44rem;
+  }
+
+  .darkroom-home-stage {
+    background-position: center top;
+  }
+
+  .darkroom-home-heading {
+    top: 15.5%;
+  }
+
+  .darkroom-home-cards {
+    perspective: 58rem;
+    perspective-origin: 50% 12%;
+  }
+
+  .darkroom-home-plane {
+    inset: -1% 0 -10%;
+    transform: rotateX(12deg);
+    transform-origin: 50% 13%;
+  }
+
+  .darkroom-home-card {
+    left: var(--darkroom-card-mobile-left) !important;
+    top: var(--darkroom-card-mobile-top) !important;
+    width: var(--darkroom-card-mobile-width) !important;
+  }
+
   .darkroom-signal,
   .darkroom-scratch-c {
     display: none;
