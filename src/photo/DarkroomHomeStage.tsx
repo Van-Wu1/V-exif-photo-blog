@@ -71,15 +71,23 @@ export default function DarkroomHomeStage({ photos }: { photos: Photo[] }) {
         >
           {visiblePhotos.map((photo, index) => {
             const placement = CARD_PLACEMENTS[index];
+            const depth = Math.max(
+              0,
+              Math.min(1, (Number.parseFloat(placement.top) - 25) / 56),
+            );
             const orientation = photo.aspectRatio < 1
               ? 'portrait'
               : 'landscape';
-            const style: CSSProperties = {
+            const style: CSSProperties & Record<string, string | number> = {
               left: placement.left,
               top: placement.top,
               width: placement.width,
               transform: `translate(-50%, -50%) rotate(${placement.rotate})`,
               zIndex: index + 1,
+              '--darkroom-card-depth': depth.toFixed(3),
+              '--darkroom-card-brightness': (0.34 + depth * 0.18).toFixed(3),
+              '--darkroom-light-x': `${42 + ((index * 7) % 17)}%`,
+              '--darkroom-light-y': `${43 + ((index * 5) % 13)}%`,
             };
 
             return (
@@ -100,6 +108,7 @@ export default function DarkroomHomeStage({ photos }: { photos: Photo[] }) {
                       className="w-full h-full"
                     />
                   </div>
+                  <span className="darkroom-home-card-illumination" />
                 </div>
               </article>
             );
