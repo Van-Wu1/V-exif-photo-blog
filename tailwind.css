@@ -632,20 +632,47 @@ html[data-visual-experience='darkroom'] .visual-experience-switcher {
   position: absolute;
   inset: 0;
   z-index: 2;
-  perspective: clamp(54rem, 72vw, 92rem);
-  perspective-origin: 50% 16%;
+  perspective: clamp(72rem, 96vw, 120rem);
+  perspective-origin: 50% 22%;
 }
 
 .darkroom-home-plane {
   position: absolute;
   inset: -5% -3% -12%;
-  transform: rotateX(15deg);
-  transform-origin: 50% 17%;
+  transform: rotateX(5deg);
+  transform-origin: 50% 22%;
   transform-style: preserve-3d;
+}
+
+.darkroom-home-table-light {
+  position: absolute;
+  z-index: 0;
+  aspect-ratio: 1.5;
+  border-radius: 50%;
+  pointer-events: none;
+  transform:
+    translate3d(-50%, -48%, 0)
+    rotateZ(var(--darkroom-light-rotation))
+    scale(2.05);
+  background: radial-gradient(
+    ellipse at center,
+    rgb(255 190 104 / 0.28) 0%,
+    rgb(226 135 58 / 0.17) 28%,
+    rgb(142 69 24 / 0.07) 52%,
+    transparent 75%
+  );
+  filter: blur(clamp(1rem, 2.2vw, 2.5rem));
+  mix-blend-mode: screen;
+  transition:
+    left 560ms cubic-bezier(0.22, 0.72, 0.2, 1),
+    top 560ms cubic-bezier(0.22, 0.72, 0.2, 1),
+    width 560ms cubic-bezier(0.22, 0.72, 0.2, 1),
+    transform 560ms cubic-bezier(0.22, 0.72, 0.2, 1);
 }
 
 .darkroom-home-card {
   position: absolute;
+  aspect-ratio: 957 / 897;
   isolation: isolate;
   transform-origin: 50% 50%;
   transform:
@@ -680,22 +707,12 @@ html[data-visual-experience='darkroom'] .visual-experience-switcher {
   transition: opacity 560ms ease, transform 720ms ease;
 }
 
-.darkroom-home-card[data-orientation='landscape'] {
-  aspect-ratio: 957 / 897;
-}
-
-.darkroom-home-card[data-orientation='portrait'] {
-  aspect-ratio: 669 / 1024;
-}
-
-.darkroom-home-card:hover,
-.darkroom-home-card:focus-within {
+.darkroom-home-card[data-lit='true'] {
   z-index: 12 !important;
   transition-delay: 0s;
 }
 
-.darkroom-home-card:hover::before,
-.darkroom-home-card:focus-within::before {
+.darkroom-home-card[data-lit='true']::before {
   opacity: calc(0.58 + var(--darkroom-card-depth) * 0.28);
   transform: scale(1);
 }
@@ -704,19 +721,13 @@ html[data-visual-experience='darkroom'] .visual-experience-switcher {
   position: relative;
   width: 100%;
   height: 100%;
+  padding: 22.9% 10.8% 21.7% 11.2%;
   filter:
     brightness(var(--darkroom-card-brightness))
     saturate(0.68)
-    contrast(0.94);
+    contrast(0.94)
+    sepia(0.08);
   transition: filter 620ms cubic-bezier(0.22, 0.7, 0.2, 1);
-}
-
-.darkroom-home-card[data-orientation='landscape'] .darkroom-home-card-surface {
-  padding: 22.9% 10.8% 21.7% 11.2%;
-}
-
-.darkroom-home-card[data-orientation='portrait'] .darkroom-home-card-surface {
-  padding: 14.2% 14.4% 15% 15%;
 }
 
 .darkroom-home-card-surface::before {
@@ -725,6 +736,7 @@ html[data-visual-experience='darkroom'] .visual-experience-switcher {
   inset: 0;
   z-index: 2;
   pointer-events: none;
+  background: url('/darkroom/slide-mount-landscape-v2.webp') center / 100% 100% no-repeat;
   filter:
     drop-shadow(
       0
@@ -740,17 +752,15 @@ html[data-visual-experience='darkroom'] .visual-experience-switcher {
     );
 }
 
-.darkroom-home-card[data-orientation='landscape'] .darkroom-home-card-surface::before {
-  background: url('/darkroom/slide-mount-landscape-v2.webp') center / 100% 100% no-repeat;
+.darkroom-home-card[data-lit='true'] .darkroom-home-card-surface {
+  filter: brightness(1.04) saturate(0.98) contrast(1) sepia(0.04);
 }
 
-.darkroom-home-card[data-orientation='portrait'] .darkroom-home-card-surface::before {
-  background: url('/darkroom/slide-mount-portrait-v1.webp') center / 100% 100% no-repeat;
-}
-
-.darkroom-home-card:hover .darkroom-home-card-surface,
-.darkroom-home-card:focus-within .darkroom-home-card-surface {
-  filter: brightness(0.96) saturate(0.98) contrast(1);
+.darkroom-home-card[data-lit='true'] .darkroom-home-card-surface::before {
+  filter:
+    drop-shadow(0 0.1rem 0.1rem rgb(0 0 0 / 0.94))
+    drop-shadow(-0.18rem 0.52rem 0.62rem rgb(0 0 0 / 0.72))
+    drop-shadow(0 0 0.55rem rgb(239 156 71 / 0.25));
 }
 
 .darkroom-home-card-index {
@@ -760,16 +770,8 @@ html[data-visual-experience='darkroom'] .visual-experience-switcher {
   font-family: Georgia, 'Times New Roman', serif;
   font-size: clamp(0.625rem, 1.2vw, 1.25rem);
   letter-spacing: 0.08em;
-}
-
-.darkroom-home-card[data-orientation='landscape'] .darkroom-home-card-index {
   top: 6%;
   left: 7.5%;
-}
-
-.darkroom-home-card[data-orientation='portrait'] .darkroom-home-card-index {
-  top: 4.8%;
-  left: 10.5%;
 }
 
 .darkroom-home-card-image {
@@ -803,16 +805,14 @@ html[data-visual-experience='darkroom'] .visual-experience-switcher {
   transition: opacity 520ms ease;
 }
 
-.darkroom-home-card:hover .darkroom-home-card-image,
-.darkroom-home-card:focus-within .darkroom-home-card-image {
+.darkroom-home-card[data-lit='true'] .darkroom-home-card-image {
   filter: brightness(1.08);
   box-shadow:
     0 0 0 1px rgb(15 9 4 / 0.8),
     inset 0 0 0 1px rgb(255 237 205 / 0.32);
 }
 
-.darkroom-home-card:hover .darkroom-home-card-image::after,
-.darkroom-home-card:focus-within .darkroom-home-card-image::after {
+.darkroom-home-card[data-lit='true'] .darkroom-home-card-image::after {
   opacity: 1;
 }
 
@@ -821,12 +821,11 @@ html[data-visual-experience='darkroom'] .visual-experience-switcher {
   inset: 0;
   z-index: 4;
   pointer-events: none;
-  background: rgb(0 0 0 / 0.22);
+  background: transparent;
   transition: opacity 520ms ease;
 }
 
-.darkroom-home-card:hover .darkroom-home-card-illumination,
-.darkroom-home-card:focus-within .darkroom-home-card-illumination {
+.darkroom-home-card[data-lit='true'] .darkroom-home-card-illumination {
   background: radial-gradient(
     ellipse 72% 64% at var(--darkroom-light-x) var(--darkroom-light-y),
     transparent 0%,
@@ -1348,20 +1347,26 @@ html[data-visual-experience='darkroom'] .darkroom-photo-frame::after {
   }
 
   .darkroom-home-cards {
-    perspective: 58rem;
-    perspective-origin: 50% 12%;
+    perspective: 72rem;
+    perspective-origin: 50% 16%;
   }
 
   .darkroom-home-plane {
     inset: -1% 0 -10%;
-    transform: rotateX(12deg);
-    transform-origin: 50% 13%;
+    transform: rotateX(4deg);
+    transform-origin: 50% 16%;
   }
 
   .darkroom-home-card {
     left: var(--darkroom-card-mobile-left) !important;
     top: var(--darkroom-card-mobile-top) !important;
     width: var(--darkroom-card-mobile-width) !important;
+  }
+
+  .darkroom-home-table-light {
+    left: var(--darkroom-light-mobile-left) !important;
+    top: var(--darkroom-light-mobile-top) !important;
+    width: var(--darkroom-light-mobile-width) !important;
   }
 
   .darkroom-signal,
@@ -1389,6 +1394,13 @@ html[data-visual-experience='darkroom'] .darkroom-photo-frame::after {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .darkroom-home-table-light,
+  .darkroom-home-card,
+  .darkroom-home-card::before,
+  .darkroom-home-card-surface,
+  .darkroom-home-card-image,
+  .darkroom-home-card-image::after,
+  .darkroom-home-card-illumination,
   .darkroom-upload-dropzone,
   .darkroom-upload-progress span {
     transition: none;

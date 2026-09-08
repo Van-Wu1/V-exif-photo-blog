@@ -4,47 +4,46 @@ import { CSSProperties, useEffect, useState } from 'react';
 import { Photo } from '.';
 import PhotoMedium from './PhotoMedium';
 
+const FEATURED_CARD_INDEX = 3;
+
 const CARD_PLACEMENTS = [
   {
-    left: '32%', top: '34%', width: '7.8%', rotate: '-9deg',
-    mobileLeft: '25%', mobileTop: '27%', mobileWidth: '22%',
+    left: '27%', top: '37%', width: '12.4%', rotate: '-8deg', layer: 1,
+    mobileLeft: '25%', mobileTop: '30%', mobileWidth: '23%',
   },
   {
-    left: '49%', top: '31%', width: '7.5%', rotate: '7deg',
-    mobileLeft: '50%', mobileTop: '24%', mobileWidth: '21%',
+    left: '64%', top: '38%', width: '12.2%', rotate: '9deg', layer: 2,
+    mobileLeft: '74%', mobileTop: '31%', mobileWidth: '23%',
   },
   {
-    left: '65%', top: '36%', width: '7.9%', rotate: '-6deg',
-    mobileLeft: '75%', mobileTop: '29%', mobileWidth: '22%',
+    left: '39%', top: '51%', width: '13.6%', rotate: '10deg', layer: 3,
+    mobileLeft: '30%', mobileTop: '49%', mobileWidth: '27%',
   },
   {
-    left: '28%', top: '54%', width: '9.7%', rotate: '8deg',
-    mobileLeft: '25%', mobileTop: '49%', mobileWidth: '27%',
+    left: '52%', top: '49%', width: '15.2%', rotate: '4deg', layer: 8,
+    mobileLeft: '51%', mobileTop: '47%', mobileWidth: '31%',
   },
   {
-    left: '49%', top: '51%', width: '10.8%', rotate: '-4deg',
-    mobileLeft: '50%', mobileTop: '46%', mobileWidth: '30%',
+    left: '65%', top: '55%', width: '13.3%', rotate: '-8deg', layer: 4,
+    mobileLeft: '72%', mobileTop: '55%', mobileWidth: '27%',
   },
   {
-    left: '69%', top: '57%', width: '9.8%', rotate: '9deg',
-    mobileLeft: '75%', mobileTop: '52%', mobileWidth: '27%',
+    left: '29%', top: '66%', width: '14%', rotate: '-10deg', layer: 5,
+    mobileLeft: '27%', mobileTop: '68%', mobileWidth: '29%',
   },
   {
-    left: '32%', top: '76%', width: '11.5%', rotate: '-11deg',
-    mobileLeft: '25%', mobileTop: '73%', mobileWidth: '32%',
+    left: '43%', top: '64%', width: '14.2%', rotate: '-7deg', layer: 6,
+    mobileLeft: '49%', mobileTop: '70%', mobileWidth: '30%',
   },
   {
-    left: '51%', top: '73%', width: '11.2%', rotate: '6deg',
-    mobileLeft: '50%', mobileTop: '70%', mobileWidth: '31%',
-  },
-  {
-    left: '68%', top: '80%', width: '12%', rotate: '-8deg',
-    mobileLeft: '75%', mobileTop: '77%', mobileWidth: '33%',
+    left: '59%', top: '68%', width: '14.2%', rotate: '7deg', layer: 7,
+    mobileLeft: '72%', mobileTop: '75%', mobileWidth: '30%',
   },
 ] as const;
 
 export default function DarkroomHomeStage({ photos }: { photos: Photo[] }) {
   const [visiblePhotos, setVisiblePhotos] = useState<Photo[]>([]);
+  const [activeCardIndex, setActiveCardIndex] = useState(FEATURED_CARD_INDEX);
 
   useEffect(() => {
     const shuffledPhotos = [...photos];
@@ -64,6 +63,17 @@ export default function DarkroomHomeStage({ photos }: { photos: Photo[] }) {
     return () => window.cancelAnimationFrame(frame);
   }, [photos]);
 
+  const activePlacement = CARD_PLACEMENTS[activeCardIndex];
+  const tableLightStyle: CSSProperties & Record<string, string | number> = {
+    left: activePlacement.left,
+    top: activePlacement.top,
+    width: activePlacement.width,
+    '--darkroom-light-rotation': activePlacement.rotate,
+    '--darkroom-light-mobile-left': activePlacement.mobileLeft,
+    '--darkroom-light-mobile-top': activePlacement.mobileTop,
+    '--darkroom-light-mobile-width': activePlacement.mobileWidth,
+  };
+
   return (
     <>
       <link
@@ -76,11 +86,6 @@ export default function DarkroomHomeStage({ photos }: { photos: Photo[] }) {
         as="image"
         href="/darkroom/slide-mount-landscape-v2.webp"
       />
-      <link
-        rel="preload"
-        as="image"
-        href="/darkroom/slide-mount-portrait-v1.webp"
-      />
       <section
         className="darkroom-stage darkroom-home-stage"
         aria-label="Photographs"
@@ -91,20 +96,21 @@ export default function DarkroomHomeStage({ photos }: { photos: Photo[] }) {
           aria-busy={visiblePhotos.length === 0}
         >
           <div className="darkroom-home-plane">
+            <span
+              className="darkroom-home-table-light"
+              style={tableLightStyle}
+            />
             {visiblePhotos.map((photo, index) => {
               const placement = CARD_PLACEMENTS[index];
               const depth = Math.max(
                 0,
                 Math.min(1, (Number.parseFloat(placement.top) - 25) / 62),
               );
-              const orientation = photo.aspectRatio < 1
-                ? 'portrait'
-                : 'landscape';
               const style: CSSProperties & Record<string, string | number> = {
                 left: placement.left,
                 top: placement.top,
                 width: placement.width,
-                zIndex: index + 1,
+                zIndex: placement.layer,
                 '--darkroom-card-rotation': placement.rotate,
                 '--darkroom-card-mobile-left': placement.mobileLeft,
                 '--darkroom-card-mobile-top': placement.mobileTop,
@@ -119,8 +125,12 @@ export default function DarkroomHomeStage({ photos }: { photos: Photo[] }) {
                 <article
                   key={photo.id}
                   className="darkroom-home-card"
-                  data-orientation={orientation}
+                  data-lit={activeCardIndex === index}
                   style={style}
+                  onPointerEnter={() => setActiveCardIndex(index)}
+                  onPointerLeave={() => setActiveCardIndex(FEATURED_CARD_INDEX)}
+                  onFocus={() => setActiveCardIndex(index)}
+                  onBlur={() => setActiveCardIndex(FEATURED_CARD_INDEX)}
                 >
                   <div className="darkroom-home-card-surface">
                     <span className="darkroom-home-card-index">
