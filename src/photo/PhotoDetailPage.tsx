@@ -140,7 +140,19 @@ export default function PhotoDetailPage({
   }
 
   return (
-    <PhotoDetailExperience photo={photo}>
+    <PhotoDetailExperience
+      photo={photo}
+      photos={photos}
+      recent={recent}
+      year={year}
+      camera={camera}
+      lens={lens}
+      album={album}
+      tag={tag}
+      film={film}
+      recipe={recipe}
+      focal={focal}
+    >
       <div>
       <AppGrid
         className="mt-1.5 mb-6"
