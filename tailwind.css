@@ -635,12 +635,17 @@ html[data-visual-experience='darkroom'] .visual-experience-switcher {
   background-repeat: no-repeat;
   background-size: cover;
   transform-origin: 50% 56%;
-  will-change: transform, opacity, filter;
+  will-change: transform, opacity;
 }
 
-.darkroom-home-stage[data-transition-state='running'] .darkroom-home-desk {
-  animation: darkroom-desk-fall 2.25s cubic-bezier(0.52, 0.03, 0.92, 0.42)
-    110ms both;
+.darkroom-home-stage[data-transition-state='forward'] .darkroom-home-desk {
+  animation: darkroom-desk-fall 1.65s cubic-bezier(0.52, 0.03, 0.92, 0.42)
+    70ms both;
+}
+
+.darkroom-home-stage[data-transition-state='reverse'] .darkroom-home-desk {
+  animation: darkroom-desk-fall 1.7s cubic-bezier(0.16, 0.66, 0.22, 1)
+    900ms reverse both;
 }
 
 .darkroom-home-stage[data-transition-state='settled'] .darkroom-home-desk {
@@ -697,7 +702,7 @@ html[data-visual-experience='darkroom'] .visual-experience-switcher {
   inset: -5% -3% -12%;
   transform: rotateX(5deg);
   transform-origin: 50% 22%;
-  transform-style: preserve-3d;
+  transform-style: flat;
   will-change: transform;
 }
 
@@ -733,13 +738,12 @@ html[data-visual-experience='darkroom'] .visual-experience-switcher {
   top: var(--darkroom-start-y);
   width: var(--darkroom-start-width);
   aspect-ratio: 957 / 897;
+  contain: layout style;
   isolation: isolate;
   opacity: var(--darkroom-card-visible);
   transform-origin: 50% 50%;
   transform:
-    translate3d(-50%, -50%, 0.1px)
-    rotateX(var(--darkroom-card-warp-x))
-    rotateY(var(--darkroom-card-warp-y))
+    translate3d(-50%, -50%, 0)
     rotateZ(var(--darkroom-card-rotation));
   backface-visibility: hidden;
   transition: filter 180ms ease;
@@ -747,15 +751,22 @@ html[data-visual-experience='darkroom'] .visual-experience-switcher {
 }
 
 .darkroom-home-card-body {
+  position: relative;
   width: 100%;
   height: 100%;
+  isolation: isolate;
   transform-origin: 50% 8%;
+  transform-style: flat;
   will-change: transform;
 }
 
-.darkroom-home-stage[data-transition-state='running']
+.darkroom-home-stage[data-transition-state='forward']
   .darkroom-home-heading,
-.darkroom-home-stage[data-transition-state='running']
+.darkroom-home-stage[data-transition-state='forward']
+  .darkroom-home-scroll-cue,
+.darkroom-home-stage[data-transition-state='reverse']
+  .darkroom-home-heading,
+.darkroom-home-stage[data-transition-state='reverse']
   .darkroom-home-scroll-cue,
 .darkroom-home-stage[data-transition-state='settled']
   .darkroom-home-heading,
@@ -765,31 +776,56 @@ html[data-visual-experience='darkroom'] .visual-experience-switcher {
   pointer-events: none;
 }
 
-.darkroom-home-stage[data-transition-state='running']
+.darkroom-home-stage[data-transition-state='forward']
   .darkroom-home-heading {
   transform: translate(-50%, 1.5rem);
 }
 
-.darkroom-home-stage[data-transition-state='running'] .darkroom-home-plane {
-  animation: darkroom-camera-level 3.45s cubic-bezier(0.2, 0.68, 0.18, 1)
+.darkroom-home-stage[data-transition-state='reverse']
+  .darkroom-home-heading,
+.darkroom-home-stage[data-transition-state='reverse']
+  .darkroom-home-scroll-cue {
+  animation: darkroom-overlay-return 3s ease-out both;
+}
+
+.darkroom-home-stage[data-transition-state='forward'] .darkroom-home-plane {
+  animation: darkroom-camera-level 2.75s cubic-bezier(0.2, 0.68, 0.18, 1)
     both;
+}
+
+.darkroom-home-stage[data-transition-state='reverse'] .darkroom-home-plane {
+  animation: darkroom-camera-level 2.75s cubic-bezier(0.2, 0.68, 0.18, 1)
+    reverse both;
 }
 
 .darkroom-home-stage[data-transition-state='settled'] .darkroom-home-plane {
   transform: rotateX(0deg) translate3d(0, 0, 0);
 }
 
-.darkroom-home-stage[data-transition-state='running'] .darkroom-home-card {
-  z-index: 10 !important;
+.darkroom-home-stage[data-transition-state='forward'] .darkroom-home-card {
+  z-index: var(--darkroom-flight-layer) !important;
   animation: darkroom-card-flight var(--darkroom-flight-duration)
     cubic-bezier(0.2, 0.67, 0.18, 1) var(--darkroom-flight-delay) both;
   pointer-events: none;
 }
 
-.darkroom-home-stage[data-transition-state='running']
+.darkroom-home-stage[data-transition-state='reverse'] .darkroom-home-card {
+  z-index: var(--darkroom-flight-layer) !important;
+  animation: darkroom-card-flight var(--darkroom-flight-duration)
+    cubic-bezier(0.2, 0.67, 0.18, 1) var(--darkroom-flight-delay) reverse both;
+  pointer-events: none;
+}
+
+.darkroom-home-stage[data-transition-state='forward']
   .darkroom-home-card-body {
   animation: darkroom-card-pendulum var(--darkroom-flight-duration)
     cubic-bezier(0.2, 0.68, 0.2, 1) var(--darkroom-flight-delay) both;
+}
+
+.darkroom-home-stage[data-transition-state='reverse']
+  .darkroom-home-card-body {
+  animation: darkroom-card-pendulum var(--darkroom-flight-duration)
+    cubic-bezier(0.2, 0.68, 0.2, 1) var(--darkroom-flight-delay) reverse both;
 }
 
 .darkroom-home-stage[data-transition-state='settled'] .darkroom-home-card {
@@ -798,7 +834,7 @@ html[data-visual-experience='darkroom'] .visual-experience-switcher {
   z-index: 10 !important;
   width: var(--darkroom-grid-width);
   opacity: 1;
-  transform: translate3d(-50%, -50%, 0) rotateX(0) rotateY(0) rotateZ(0);
+  transform: translate3d(-50%, -50%, 0) rotateZ(0);
 }
 
 .darkroom-home-stage[data-transition-state='settled']
@@ -810,7 +846,6 @@ html[data-visual-experience='darkroom'] .visual-experience-switcher {
 @keyframes darkroom-desk-fall {
   0% {
     opacity: 1;
-    filter: blur(0);
     transform: translate3d(0, 0, 0) scale(1);
   }
   12% {
@@ -819,17 +854,14 @@ html[data-visual-experience='darkroom'] .visual-experience-switcher {
   }
   38% {
     opacity: 0.96;
-    filter: blur(0.1rem);
     transform: translate3d(0, 11%, -2rem) scale(0.985);
   }
   72% {
     opacity: 0.58;
-    filter: blur(0.45rem);
     transform: translate3d(0, 68%, -9rem) scale(0.9);
   }
   100% {
     opacity: 0;
-    filter: blur(0.85rem);
     transform: translate3d(0, 125%, -18rem) scale(0.76);
   }
 }
@@ -857,17 +889,13 @@ html[data-visual-experience='darkroom'] .visual-experience-switcher {
   8% {
     opacity: var(--darkroom-card-visible);
     transform:
-      translate3d(-50%, -50%, 0.1px)
-      rotateX(var(--darkroom-card-warp-x))
-      rotateY(var(--darkroom-card-warp-y))
+      translate3d(-50%, -50%, 0)
       rotateZ(var(--darkroom-card-rotation));
   }
   24% {
     opacity: max(0.32, var(--darkroom-card-visible));
     transform:
-      translate3d(calc(-50% + var(--darkroom-lift-drift)), -58%, 2.8rem)
-      rotateX(calc(var(--darkroom-card-warp-x) - 5.5deg))
-      rotateY(var(--darkroom-card-warp-y))
+      translate3d(calc(-50% + var(--darkroom-lift-drift)), -58%, 0)
       rotateZ(calc(var(--darkroom-card-rotation) + var(--darkroom-lift-angle)));
   }
   60% {
@@ -876,9 +904,7 @@ html[data-visual-experience='darkroom'] .visual-experience-switcher {
     width: var(--darkroom-grid-width);
     opacity: 1;
     transform:
-      translate3d(-50%, -54%, 1.4rem)
-      rotateX(-1.6deg)
-      rotateY(0)
+      translate3d(-50%, -54%, 0)
       rotateZ(calc(var(--darkroom-lift-angle) * 0.42));
   }
   73% {
@@ -886,14 +912,14 @@ html[data-visual-experience='darkroom'] .visual-experience-switcher {
     top: var(--darkroom-grid-y);
     width: var(--darkroom-grid-width);
     opacity: 1;
-    transform: translate3d(-50%, -50%, 0) rotateX(0.4deg) rotateZ(-1.8deg);
+    transform: translate3d(-50%, -50%, 0) rotateZ(-1.8deg);
   }
   82% {
     left: var(--darkroom-grid-x);
     top: var(--darkroom-grid-y);
     width: var(--darkroom-grid-width);
     opacity: 1;
-    transform: translate3d(-50%, -50.4%, 0) rotateX(-0.2deg) rotateZ(0.9deg);
+    transform: translate3d(-50%, -50.4%, 0) rotateZ(0.9deg);
   }
   90% {
     left: var(--darkroom-grid-x);
@@ -914,23 +940,36 @@ html[data-visual-experience='darkroom'] .visual-experience-switcher {
     top: var(--darkroom-grid-y);
     width: var(--darkroom-grid-width);
     opacity: 1;
-    transform: translate3d(-50%, -50%, 0) rotateX(0) rotateY(0) rotateZ(0);
+    transform: translate3d(-50%, -50%, 0) rotateZ(0);
   }
 }
 
 @keyframes darkroom-card-pendulum {
   0%,
-  12% { transform: rotateZ(0) rotateX(0); }
+  12% { transform: perspective(70rem) rotateZ(0) rotateX(0); }
   31% {
     transform:
+      perspective(70rem)
       rotateZ(var(--darkroom-lift-angle))
       rotateX(calc(var(--darkroom-card-warp-x) - 4deg));
   }
-  58% { transform: rotateZ(calc(var(--darkroom-lift-angle) * -0.38)); }
-  73% { transform: rotateZ(calc(var(--darkroom-lift-angle) * 0.2)); }
-  84% { transform: rotateZ(calc(var(--darkroom-lift-angle) * -0.085)); }
-  93% { transform: rotateZ(calc(var(--darkroom-lift-angle) * 0.025)); }
-  100% { transform: rotateZ(0) rotateX(0); }
+  58% {
+    transform: perspective(70rem)
+      rotateZ(calc(var(--darkroom-lift-angle) * -0.38));
+  }
+  73% {
+    transform: perspective(70rem)
+      rotateZ(calc(var(--darkroom-lift-angle) * 0.2));
+  }
+  84% {
+    transform: perspective(70rem)
+      rotateZ(calc(var(--darkroom-lift-angle) * -0.085));
+  }
+  93% {
+    transform: perspective(70rem)
+      rotateZ(calc(var(--darkroom-lift-angle) * 0.025));
+  }
+  100% { transform: perspective(70rem) rotateZ(0) rotateX(0); }
 }
 
 @keyframes darkroom-card-breathe {
@@ -944,6 +983,12 @@ html[data-visual-experience='darkroom'] .visual-experience-switcher {
   34% { transform: translate3d(0.05%, -0.07%, 0) scale(1.0075); }
   68% { transform: translate3d(0.09%, 0.06%, 0) scale(1.0068); }
   100% { transform: translate3d(-0.04%, -0.03%, 0) scale(1.007); }
+}
+
+@keyframes darkroom-overlay-return {
+  0%,
+  76% { opacity: 0; }
+  100% { opacity: 1; }
 }
 
 .darkroom-home-card::before {
@@ -985,6 +1030,7 @@ html[data-visual-experience='darkroom'] .visual-experience-switcher {
   z-index: 1;
   width: 100%;
   height: 100%;
+  overflow: hidden;
   padding: 22.9% 10.8% 21.7% 11.2%;
   border: 1px solid rgb(63 53 42 / 0.68);
   border-radius: 3.8%;
@@ -1043,7 +1089,9 @@ html[data-visual-experience='darkroom'] .visual-experience-switcher {
   filter: brightness(1.04) saturate(0.98) contrast(1) sepia(0.04);
 }
 
-.darkroom-home-stage[data-transition-state='running']
+.darkroom-home-stage[data-transition-state='forward']
+  .darkroom-home-card-surface,
+.darkroom-home-stage[data-transition-state='reverse']
   .darkroom-home-card-surface,
 .darkroom-home-stage[data-transition-state='settled']
   .darkroom-home-card-surface {

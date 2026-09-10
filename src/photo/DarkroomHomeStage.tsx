@@ -12,9 +12,10 @@ import PhotoMedium from './PhotoMedium';
 const FEATURED_CARD_INDEX = 3;
 const SCATTERED_CARD_COUNT = 10;
 const GRID_COLUMNS = 5;
-const TRANSITION_DURATION = 4450;
+const TRANSITION_DURATION = 3050;
 
-type TransitionState = 'idle' | 'running' | 'settled';
+type TransitionDirection = 'forward' | 'reverse';
+type TransitionState = 'idle' | TransitionDirection | 'settled';
 
 const CARD_PLACEMENTS = [
   { x: 23, y: 37, width: 13.2, rotate: -14, layer: 1, warpX: 0.7, warpY: -0.5 },
@@ -53,11 +54,11 @@ const MOBILE_SCATTER_PLACEMENTS = [
 ] as const;
 
 const FLIGHT_DELAYS = [
-  0, 180, 70, 290, 120, 360, 40, 235, 100, 320, 160, 390, 210, 55, 275,
+  0, 110, 40, 190, 70, 230, 25, 150, 60, 210, 100, 250, 130, 35, 175,
 ] as const;
 const FLIGHT_DURATIONS = [
-  3260, 3420, 3340, 3190, 3490, 3310, 3440, 3230, 3520, 3370,
-  3280, 3450, 3350, 3500, 3210,
+  2260, 2380, 2320, 2210, 2420, 2290, 2390, 2240, 2440, 2340,
+  2270, 2400, 2310, 2430, 2230,
 ] as const;
 
 const clamp = (value: number) => Math.max(0, Math.min(1, value));
@@ -99,41 +100,61 @@ export default function DarkroomHomeStage({ photos }: { photos: Photo[] }) {
     let settleTimer = 0;
     let touchStartY: number | undefined;
 
-    const beginTransition = () => {
-      if (transitionStateRef.current !== 'idle') return;
+    const beginTransition = (direction: TransitionDirection) => {
+      const currentState = transitionStateRef.current;
+      const canTransition = direction === 'forward'
+        ? currentState === 'idle'
+        : currentState === 'settled';
+      if (!canTransition) return;
 
-      transitionStateRef.current = 'running';
-      setTransitionState('running');
+      window.clearTimeout(settleTimer);
+      transitionStateRef.current = direction;
+      setTransitionState(direction);
       setActiveCardIndex(null);
 
       const reduceMotion = window.matchMedia(
         '(prefers-reduced-motion: reduce)',
       ).matches;
       settleTimer = window.setTimeout(() => {
-        transitionStateRef.current = 'settled';
-        setTransitionState('settled');
+        const nextState = direction === 'forward' ? 'settled' : 'idle';
+        transitionStateRef.current = nextState;
+        setTransitionState(nextState);
+        setActiveCardIndex(
+          nextState === 'idle' ? FEATURED_CARD_INDEX : null,
+        );
       }, reduceMotion ? 50 : TRANSITION_DURATION);
     };
 
     const handleWheel = (event: WheelEvent) => {
-      if (transitionStateRef.current === 'running') {
+      const currentState = transitionStateRef.current;
+      if (currentState === 'forward' || currentState === 'reverse') {
         event.preventDefault();
         return;
       }
 
-      if (transitionStateRef.current === 'idle' && event.deltaY > 8) {
+      if (currentState === 'idle' && event.deltaY > 8) {
         event.preventDefault();
-        beginTransition();
+        beginTransition('forward');
+      } else if (currentState === 'settled' && event.deltaY < -8) {
+        event.preventDefault();
+        beginTransition('reverse');
       }
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
+      const currentState = transitionStateRef.current;
       if (
-        transitionStateRef.current === 'idle'
+        currentState === 'idle'
         && ['ArrowDown', 'PageDown', ' '].includes(event.key)
       ) {
         event.preventDefault();
-        beginTransition();
+        beginTransition('forward');
+      } else if (
+        currentState === 'settled'
+        && ['ArrowUp', 'PageUp'].includes(event.key)
+      ) {
+        event.preventDefault();
+        beginTransition('reverse');
       }
     };
 
@@ -143,13 +164,19 @@ export default function DarkroomHomeStage({ photos }: { photos: Photo[] }) {
 
     const handleTouchEnd = (event: TouchEvent) => {
       const touchEndY = event.changedTouches[0]?.clientY;
+      const touchDistance = touchStartY !== undefined && touchEndY !== undefined
+        ? touchStartY - touchEndY
+        : 0;
       if (
         transitionStateRef.current === 'idle'
-        && touchStartY !== undefined
-        && touchEndY !== undefined
-        && touchStartY - touchEndY > 24
+        && touchDistance > 24
       ) {
-        beginTransition();
+        beginTransition('forward');
+      } else if (
+        transitionStateRef.current === 'settled'
+        && touchDistance < -24
+      ) {
+        beginTransition('reverse');
       }
       touchStartY = undefined;
     };
@@ -250,6 +277,7 @@ export default function DarkroomHomeStage({ photos }: { photos: Photo[] }) {
                   '--darkroom-mobile-grid-width': '23%',
                   '--darkroom-flight-delay': `${FLIGHT_DELAYS[index]}ms`,
                   '--darkroom-flight-duration': `${FLIGHT_DURATIONS[index]}ms`,
+                  '--darkroom-flight-layer': index + 10,
                   '--darkroom-swing-direction': swingDirection,
                   '--darkroom-lift-drift': `${swingDirection * (0.7 + (index % 3) * 0.35)}rem`,
                   '--darkroom-lift-angle': `${swingDirection * (3.8 + (index % 4) * 0.9)}deg`,
@@ -266,7 +294,10 @@ export default function DarkroomHomeStage({ photos }: { photos: Photo[] }) {
                     data-scattered={isScattered}
                     style={style}
                     onPointerEnter={() => {
-                      if (transitionState !== 'running') {
+                      if (
+                        transitionState !== 'forward'
+                        && transitionState !== 'reverse'
+                      ) {
                         setActiveCardIndex(index);
                       }
                     }}
@@ -278,7 +309,10 @@ export default function DarkroomHomeStage({ photos }: { photos: Photo[] }) {
                       );
                     }}
                     onFocus={() => {
-                      if (transitionState !== 'running') {
+                      if (
+                        transitionState !== 'forward'
+                        && transitionState !== 'reverse'
+                      ) {
                         setActiveCardIndex(index);
                       }
                     }}
