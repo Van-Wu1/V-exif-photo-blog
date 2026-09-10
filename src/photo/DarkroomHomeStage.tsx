@@ -12,6 +12,9 @@ import PhotoMedium from './PhotoMedium';
 const FEATURED_CARD_INDEX = 3;
 const SCATTERED_CARD_COUNT = 10;
 const GRID_COLUMNS = 5;
+const TRANSITION_DURATION = 4450;
+
+type TransitionState = 'idle' | 'running' | 'settled';
 
 const CARD_PLACEMENTS = [
   { x: 23, y: 37, width: 13.2, rotate: -14, layer: 1, warpX: 0.7, warpY: -0.5 },
@@ -49,20 +52,27 @@ const MOBILE_SCATTER_PLACEMENTS = [
   { x: 50, y: 48, width: 24 },
 ] as const;
 
+const FLIGHT_DELAYS = [
+  0, 180, 70, 290, 120, 360, 40, 235, 100, 320, 160, 390, 210, 55, 275,
+] as const;
+const FLIGHT_DURATIONS = [
+  3260, 3420, 3340, 3190, 3490, 3310, 3440, 3230, 3520, 3370,
+  3280, 3450, 3350, 3500, 3210,
+] as const;
+
 const clamp = (value: number) => Math.max(0, Math.min(1, value));
-const lerp = (from: number, to: number, progress: number) =>
-  from + (to - from) * progress;
-const smoothstep = (value: number) => {
-  const boundedValue = clamp(value);
-  return boundedValue * boundedValue * (3 - 2 * boundedValue);
-};
 
 export default function DarkroomHomeStage({ photos }: { photos: Photo[] }) {
-  const [visiblePhotos, setVisiblePhotos] = useState<Photo[]>([]);
-  const [activeCardIndex, setActiveCardIndex] = useState(FEATURED_CARD_INDEX);
-  const scrollRef = useRef<HTMLElement>(null);
-  const stageRef = useRef<HTMLDivElement>(null);
-  const cardRefs = useRef<Array<HTMLElement | null>>([]);
+  const [visiblePhotos, setVisiblePhotos] = useState<Photo[]>(() =>
+    photos.slice(0, CARD_PLACEMENTS.length),
+  );
+  const [activeCardIndex, setActiveCardIndex] = useState<number | null>(
+    FEATURED_CARD_INDEX,
+  );
+  const [transitionState, setTransitionState] =
+    useState<TransitionState>('idle');
+  const stageRef = useRef<HTMLElement>(null);
+  const transitionStateRef = useRef<TransitionState>('idle');
 
   useEffect(() => {
     const shuffledPhotos = [...photos];
@@ -83,143 +93,88 @@ export default function DarkroomHomeStage({ photos }: { photos: Photo[] }) {
   }, [photos]);
 
   useEffect(() => {
-    let animationFrame = 0;
-    let wasGridLocked = false;
+    const stageElement = stageRef.current;
+    if (!stageElement) return;
 
-    const updateScrollProgress = () => {
-      animationFrame = 0;
-      const scrollElement = scrollRef.current;
-      const stageElement = stageRef.current;
-      if (!scrollElement || !stageElement) return;
+    let settleTimer = 0;
+    let touchStartY: number | undefined;
 
-      const scrollDistance = scrollElement.offsetHeight - window.innerHeight;
-      const rawProgress = scrollDistance > 0
-        ? clamp(-scrollElement.getBoundingClientRect().top / scrollDistance)
-        : 0;
-      const tensionProgress = smoothstep(rawProgress / 0.15);
-      const liftProgress = smoothstep((rawProgress - 0.15) / 0.3);
-      const orbitProgress = smoothstep((rawProgress - 0.45) / 0.35);
-      const lockProgress = smoothstep((rawProgress - 0.8) / 0.2);
-      const gridReveal = smoothstep((rawProgress - 0.52) / 0.28);
-      const gridLocked = rawProgress >= 0.985;
-      const setStageProperty = stageElement.style.setProperty.bind(
-        stageElement.style,
-      );
+    const beginTransition = () => {
+      if (transitionStateRef.current !== 'idle') return;
 
-      setStageProperty('--darkroom-scroll-progress', rawProgress.toFixed(4));
-      setStageProperty(
-        '--darkroom-tension-progress',
-        tensionProgress.toFixed(4),
-      );
-      setStageProperty('--darkroom-lift-progress', liftProgress.toFixed(4));
-      setStageProperty('--darkroom-orbit-progress', orbitProgress.toFixed(4));
-      setStageProperty('--darkroom-lock-progress', lockProgress.toFixed(4));
-      setStageProperty('--darkroom-grid-reveal', gridReveal.toFixed(4));
-      setStageProperty(
-        '--darkroom-plane-angle',
-        `${lerp(5, 0, orbitProgress)}deg`,
-      );
-      setStageProperty('--darkroom-light-opacity', `${1 - orbitProgress}`);
-      setStageProperty(
-        '--darkroom-heading-opacity',
-        `${1 - smoothstep(rawProgress / 0.28)}`,
-      );
-      setStageProperty(
-        '--darkroom-clip-offset',
-        `${(1 - tensionProgress) * -18}vh`,
-      );
-      stageElement.dataset.scrollPhase = rawProgress < 0.15
-        ? 'tension'
-        : rawProgress < 0.45
-          ? 'lift'
-          : rawProgress < 0.8
-            ? 'orbit'
-            : 'lock';
+      transitionStateRef.current = 'running';
+      setTransitionState('running');
+      setActiveCardIndex(null);
 
-      cardRefs.current.forEach((cardElement, index) => {
-        const placement = CARD_PLACEMENTS[index];
-        if (!cardElement || !placement) return;
+      const reduceMotion = window.matchMedia(
+        '(prefers-reduced-motion: reduce)',
+      ).matches;
+      settleTimer = window.setTimeout(() => {
+        transitionStateRef.current = 'settled';
+        setTransitionState('settled');
+      }, reduceMotion ? 50 : TRANSITION_DURATION);
+    };
 
-        const isMobile = window.innerWidth < 768;
-        const scatterPlacement = isMobile
-          ? MOBILE_SCATTER_PLACEMENTS[index]
-          : placement;
-        const gridColumns = isMobile ? 3 : GRID_COLUMNS;
-        const gridColumn = index % gridColumns;
-        const gridRow = Math.floor(index / gridColumns);
-        const gridX = isMobile
-          ? 20 + gridColumn * 30
-          : 18 + gridColumn * 16;
-        const gridY = isMobile
-          ? 17 + gridRow * 17
-          : 27 + gridRow * 24;
-        const gridWidth = isMobile ? 23 : 10.8;
-        const dragDirection = index % 2 === 0 ? -1 : 1;
-        const liftedX = scatterPlacement.x + dragDirection * liftProgress * 1.1;
-        const liftedY = scatterPlacement.y - liftProgress * (5 + (index % 3));
-        const cardX = lerp(liftedX, gridX, orbitProgress);
-        const cardY = lerp(liftedY, gridY, orbitProgress);
-        const cardWidth = lerp(
-          scatterPlacement.width,
-          gridWidth,
-          orbitProgress,
-        );
-        const cardRotation = lerp(placement.rotate, 0, orbitProgress);
-        const cardPitch = lerp(
-          placement.warpX - liftProgress * 4.5,
-          0,
-          orbitProgress,
-        );
-        const cardYaw = lerp(placement.warpY, 0, orbitProgress);
-        const liftDepth = liftProgress * (1 - orbitProgress) * 3.4;
-        const isScattered = index < SCATTERED_CARD_COUNT;
+    const handleWheel = (event: WheelEvent) => {
+      if (transitionStateRef.current === 'running') {
+        event.preventDefault();
+        return;
+      }
 
-        cardElement.style.left = `${cardX}%`;
-        cardElement.style.top = `${cardY}%`;
-        cardElement.style.width = `${cardWidth}%`;
-        cardElement.style.opacity = isScattered ? '1' : gridReveal.toFixed(4);
-        cardElement.style.pointerEvents = isScattered || gridReveal > 0.65
-          ? 'auto'
-          : 'none';
-        cardElement.style.zIndex = orbitProgress > 0.75
-          ? String(index + 1)
-          : String(placement.layer);
-        cardElement.style.setProperty(
-          '--darkroom-current-rotation',
-          `${cardRotation}deg`,
-        );
-        cardElement.style.transform = [
-          `translate3d(-50%, -50%, ${liftDepth}rem)`,
-          `rotateX(${cardPitch}deg)`,
-          `rotateY(${cardYaw}deg)`,
-          `rotateZ(${cardRotation}deg)`,
-        ].join(' ');
-      });
-
-      if (gridLocked !== wasGridLocked) {
-        wasGridLocked = gridLocked;
-        stageElement.dataset.gridLocked = String(gridLocked);
+      if (transitionStateRef.current === 'idle' && event.deltaY > 8) {
+        event.preventDefault();
+        beginTransition();
       }
     };
 
-    const scheduleUpdate = () => {
-      if (!animationFrame) {
-        animationFrame = window.requestAnimationFrame(updateScrollProgress);
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (
+        transitionStateRef.current === 'idle'
+        && ['ArrowDown', 'PageDown', ' '].includes(event.key)
+      ) {
+        event.preventDefault();
+        beginTransition();
       }
     };
 
-    updateScrollProgress();
-    window.addEventListener('scroll', scheduleUpdate, { passive: true });
-    window.addEventListener('resize', scheduleUpdate);
+    const handleTouchStart = (event: TouchEvent) => {
+      touchStartY = event.touches[0]?.clientY;
+    };
+
+    const handleTouchEnd = (event: TouchEvent) => {
+      const touchEndY = event.changedTouches[0]?.clientY;
+      if (
+        transitionStateRef.current === 'idle'
+        && touchStartY !== undefined
+        && touchEndY !== undefined
+        && touchStartY - touchEndY > 24
+      ) {
+        beginTransition();
+      }
+      touchStartY = undefined;
+    };
+
+    window.addEventListener('wheel', handleWheel, { passive: false });
+    stageElement.addEventListener('touchstart', handleTouchStart, {
+      passive: true,
+    });
+    stageElement.addEventListener('touchend', handleTouchEnd, {
+      passive: true,
+    });
+    window.addEventListener('keydown', handleKeyDown);
 
     return () => {
-      window.removeEventListener('scroll', scheduleUpdate);
-      window.removeEventListener('resize', scheduleUpdate);
-      if (animationFrame) window.cancelAnimationFrame(animationFrame);
+      window.clearTimeout(settleTimer);
+      window.removeEventListener('wheel', handleWheel);
+      stageElement.removeEventListener('touchstart', handleTouchStart);
+      stageElement.removeEventListener('touchend', handleTouchEnd);
+      window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [visiblePhotos.length]);
+  }, []);
 
-  const activePlacement = CARD_PLACEMENTS[activeCardIndex];
+  const activePlacement = CARD_PLACEMENTS[
+    activeCardIndex ?? FEATURED_CARD_INDEX
+  ];
   const tableLightStyle: CSSProperties & Record<string, string | number> = {
     left: `${activePlacement.x}%`,
     top: `${activePlacement.y}%`,
@@ -240,39 +195,43 @@ export default function DarkroomHomeStage({ photos }: { photos: Photo[] }) {
         href="/darkroom/slide-mount-landscape-v2.webp"
       />
       <section
-        ref={scrollRef}
-        className="darkroom-home-scroll"
+        ref={stageRef}
+        className="darkroom-stage darkroom-home-stage"
+        data-transition-state={transitionState}
         aria-label="Photographs"
       >
-        <div
-          ref={stageRef}
-          className="darkroom-stage darkroom-home-stage"
-        >
+        <div className="darkroom-home-camera">
+          <div className="darkroom-home-desk" aria-hidden="true">
+            <span
+              className="darkroom-home-table-light"
+              style={tableLightStyle}
+            />
+          </div>
           <div className="darkroom-home-heading">PHOTOGRAPHS</div>
           <span className="darkroom-home-scroll-cue" aria-hidden="true">
-            SCROLL TO LIFT
+            SCROLL TO RELEASE
           </span>
           <div
             className="darkroom-home-cards"
             aria-busy={visiblePhotos.length === 0}
           >
             <div className="darkroom-home-plane">
-              <span
-                className="darkroom-home-table-light"
-                style={tableLightStyle}
-              />
               {visiblePhotos.map((photo, index) => {
                 const placement = CARD_PLACEMENTS[index];
+                const mobilePlacement = MOBILE_SCATTER_PLACEMENTS[index];
                 const isScattered = index < SCATTERED_CARD_COUNT;
                 const depth = clamp((placement.y - 25) / 50);
+                const gridColumn = index % GRID_COLUMNS;
+                const gridRow = Math.floor(index / GRID_COLUMNS);
+                const mobileColumn = index % 3;
+                const mobileRow = Math.floor(index / 3);
+                const swingDirection = index % 2 === 0 ? -1 : 1;
                 const style: CSSProperties & Record<string, string | number> = {
                   zIndex: placement.layer,
-                  left: `${placement.x}%`,
-                  top: `${placement.y}%`,
-                  width: `${placement.width}%`,
-                  opacity: isScattered ? 1 : 0,
+                  '--darkroom-start-x': `${placement.x}%`,
+                  '--darkroom-start-y': `${placement.y}%`,
+                  '--darkroom-start-width': `${placement.width}%`,
                   '--darkroom-card-rotation': `${placement.rotate}deg`,
-                  '--darkroom-current-rotation': `${placement.rotate}deg`,
                   '--darkroom-card-warp-x': `${placement.warpX}deg`,
                   '--darkroom-card-warp-y': `${placement.warpY}deg`,
                   '--darkroom-card-depth': depth.toFixed(3),
@@ -280,7 +239,21 @@ export default function DarkroomHomeStage({ photos }: { photos: Photo[] }) {
                     0.38 + depth * 0.13
                   ).toFixed(3),
                   '--darkroom-card-visible': isScattered ? 1 : 0,
-                  '--darkroom-grid-delay': `${index * 34}ms`,
+                  '--darkroom-mobile-x': `${mobilePlacement.x}%`,
+                  '--darkroom-mobile-y': `${mobilePlacement.y}%`,
+                  '--darkroom-mobile-width': `${mobilePlacement.width}%`,
+                  '--darkroom-grid-x': `${18 + gridColumn * 16}%`,
+                  '--darkroom-grid-y': `${27 + gridRow * 24}%`,
+                  '--darkroom-grid-width': '10.8%',
+                  '--darkroom-mobile-grid-x': `${20 + mobileColumn * 30}%`,
+                  '--darkroom-mobile-grid-y': `${17 + mobileRow * 17}%`,
+                  '--darkroom-mobile-grid-width': '23%',
+                  '--darkroom-flight-delay': `${FLIGHT_DELAYS[index]}ms`,
+                  '--darkroom-flight-duration': `${FLIGHT_DURATIONS[index]}ms`,
+                  '--darkroom-swing-direction': swingDirection,
+                  '--darkroom-lift-drift': `${swingDirection * (0.7 + (index % 3) * 0.35)}rem`,
+                  '--darkroom-lift-angle': `${swingDirection * (3.8 + (index % 4) * 0.9)}deg`,
+                  '--darkroom-breathe-delay': `${(index * 379) % 1700}ms`,
                   '--darkroom-light-x': `${42 + ((index * 7) % 17)}%`,
                   '--darkroom-light-y': `${43 + ((index * 5) % 13)}%`,
                 };
@@ -288,40 +261,50 @@ export default function DarkroomHomeStage({ photos }: { photos: Photo[] }) {
                 return (
                   <article
                     key={photo.id}
-                    ref={element => {
-                      cardRefs.current[index] = element;
-                    }}
                     className="darkroom-home-card"
                     data-lit={activeCardIndex === index}
                     data-scattered={isScattered}
                     style={style}
-                    onPointerEnter={() => setActiveCardIndex(index)}
-                    onPointerLeave={() => {
-                      setActiveCardIndex(FEATURED_CARD_INDEX);
+                    onPointerEnter={() => {
+                      if (transitionState !== 'running') {
+                        setActiveCardIndex(index);
+                      }
                     }}
-                    onFocus={() => setActiveCardIndex(index)}
-                    onBlur={() => setActiveCardIndex(FEATURED_CARD_INDEX)}
+                    onPointerLeave={() => {
+                      setActiveCardIndex(
+                        transitionState === 'idle'
+                          ? FEATURED_CARD_INDEX
+                          : null,
+                      );
+                    }}
+                    onFocus={() => {
+                      if (transitionState !== 'running') {
+                        setActiveCardIndex(index);
+                      }
+                    }}
+                    onBlur={() => {
+                      setActiveCardIndex(
+                        transitionState === 'idle'
+                          ? FEATURED_CARD_INDEX
+                          : null,
+                      );
+                    }}
                   >
-                    <span
-                      className="darkroom-home-wire"
-                      aria-hidden="true"
-                    />
-                    <span className="darkroom-home-clip" aria-hidden="true">
-                      <i />
-                    </span>
-                    <div className="darkroom-home-card-surface">
-                      <span className="darkroom-home-card-index">
-                        {String(index + 1).padStart(2, '0')}
-                      </span>
-                      <div className="darkroom-home-card-image">
-                        <PhotoMedium
-                          photo={photo}
-                          priority={index < 3}
-                          prefetch={false}
-                          className="w-full h-full"
-                        />
+                    <div className="darkroom-home-card-body">
+                      <div className="darkroom-home-card-surface">
+                        <span className="darkroom-home-card-index">
+                          {String(index + 1).padStart(2, '0')}
+                        </span>
+                        <div className="darkroom-home-card-image">
+                          <PhotoMedium
+                            photo={photo}
+                            priority={index < 3}
+                            prefetch={false}
+                            className="w-full h-full"
+                          />
+                        </div>
+                        <span className="darkroom-home-card-illumination" />
                       </div>
-                      <span className="darkroom-home-card-illumination" />
                     </div>
                   </article>
                 );
