@@ -12,6 +12,16 @@ import {
   isPathAdmin,
   isPathFull,
   isPathGrid,
+  isPathPhoto,
+  isPathRecentsPhoto,
+  isPathYearPhoto,
+  isPathCameraPhoto,
+  isPathLensPhoto,
+  isPathAlbumPhoto,
+  isPathTagPhoto,
+  isPathRecipePhoto,
+  isPathFilmPhoto,
+  isPathFocalLengthPhoto,
   isPathProtected,
   isPathSignIn,
 } from '@/app/path';
@@ -19,6 +29,7 @@ import AnimateItems from '../components/AnimateItems';
 import {
   GRID_HOMEPAGE_ENABLED,
   NAV_CAPTION,
+  SHOW_KEYBOARD_SHORTCUT_TOOLTIPS,
 } from './config';
 import { useRef } from 'react';
 import useStickyNav from './useStickyNav';
@@ -29,7 +40,7 @@ import Switcher from '@/components/switcher/Switcher';
 import SwitcherItem from '@/components/switcher/SwitcherItem';
 import { KEY_COMMANDS } from '@/photo/key-commands';
 import { useAppText } from '@/i18n/state/client';
-import { SHOW_KEYBOARD_SHORTCUT_TOOLTIPS } from './config';
+import { useVisualExperience } from './VisualExperienceProvider';
 
 const NAV_HEIGHT_CLASS = NAV_CAPTION
   ? 'min-h-[4rem] sm:min-h-[5rem]'
@@ -48,6 +59,27 @@ export default function NavClient({
 
   const pathname = usePathname();
   const showNav = !isPathSignIn(pathname);
+  const { isDarkroomExperience } = useVisualExperience();
+
+  const isPhotoDetailPath =
+    isPathPhoto(pathname)
+    || isPathRecentsPhoto(pathname)
+    || isPathYearPhoto(pathname)
+    || isPathCameraPhoto(pathname)
+    || isPathLensPhoto(pathname)
+    || isPathAlbumPhoto(pathname)
+    || isPathTagPhoto(pathname)
+    || isPathRecipePhoto(pathname)
+    || isPathFilmPhoto(pathname)
+    || isPathFocalLengthPhoto(pathname);
+  const isDarkroomPhotoDetail = isDarkroomExperience && isPhotoDetailPath;
+  const darkroomBackHref = isPathPhoto(pathname)
+    ? PATH_ROOT
+    : pathname
+      .replace(/\/+$/, '')
+      .split('/')
+      .slice(0, -1)
+      .join('/') || PATH_ROOT;
 
   const {
     hasLoadedWithAnimations,
@@ -60,7 +92,10 @@ export default function NavClient({
     classNameStickyContainer,
     classNameStickyNav,
     isNavVisible,
-  } = useStickyNav(ref, !isPathAdmin(pathname));
+  } = useStickyNav(
+    ref,
+    !isPathAdmin(pathname) && !isDarkroomExperience,
+  );
 
   const renderLink = (
     text: string,
@@ -82,6 +117,30 @@ export default function NavClient({
     }
   };
 
+  const renderBackLink = (textSize: string) => {
+    const className = clsx(
+      'app-nav-back hover-trigger flex items-center gap-2 group',
+      'mr-4',
+      'opacity-40 hover:opacity-100 transition-opacity',
+    );
+    const content = <>
+      <BiArrowBack size={12} className="transition-opacity" />
+      <span className={clsx(
+        textSize,
+        'tracking-[0.2em] uppercase font-light',
+        'transition-opacity',
+      )}>
+        Back
+      </span>
+    </>;
+
+    return isDarkroomPhotoDetail
+      ? <Link href={darkroomBackHref} {...{ className }}>{content}</Link>
+      : <a href="https://involv.studio/index.html" {...{ className }}>
+        {content}
+      </a>;
+  };
+
   return (
     <>
       <AppGrid
@@ -90,13 +149,18 @@ export default function NavClient({
         contentMain={
           <AnimateItems
             animateOnFirstLoadOnly
-            type={animate && !isPathAdmin(pathname) ? 'bottom' : 'none'}
+            type={
+              animate && !isPathAdmin(pathname) && !isDarkroomExperience
+                ? 'bottom'
+                : 'none'
+            }
             distanceOffset={10}
             items={showNav
               ? [<nav
                 key="nav"
                 ref={ref}
                 className={clsx(
+                  'app-nav',
                   'w-full bg-main',
                   NAV_HEIGHT_CLASS,
                   // Enlarge nav to ensure it fully masks underlying content
@@ -112,23 +176,7 @@ export default function NavClient({
                   'w-full',
                 )}>
                   {/* Back Button */}
-                  <a
-                    href="https://involv.studio/index.html"
-                    className={clsx(
-                      'hover-trigger flex items-center gap-2 group',
-                      'mr-4',
-                      'opacity-40 hover:opacity-100 transition-opacity',
-                    )}
-                  >
-                    <BiArrowBack size={12} className="transition-opacity" />
-                    <span className={clsx(
-                      'text-[9px]',
-                      'tracking-[0.2em] uppercase font-light',
-                      'transition-opacity',
-                    )}>
-                      Back
-                    </span>
-                  </a>
+                  {renderBackLink('text-[9px]')}
                   {/* Title - Right aligned on mobile */}
                   <div className={clsx(
                     'grow text-right min-w-0',
@@ -181,23 +229,7 @@ export default function NavClient({
                   'w-full',
                 )}>
                   {/* Back Button */}
-                  <a
-                    href="https://involv.studio/index.html"
-                    className={clsx(
-                      'hover-trigger flex items-center gap-2 group',
-                      'mr-4',
-                      'opacity-40 hover:opacity-100 transition-opacity',
-                    )}
-                  >
-                    <BiArrowBack size={12} className="transition-opacity" />
-                    <span className={clsx(
-                      'text-[10px]',
-                      'tracking-[0.2em] uppercase font-light',
-                      'transition-opacity',
-                    )}>
-                      Back
-                    </span>
-                  </a>
+                  {renderBackLink('text-[10px]')}
                   <div className="h-[10px] w-[1px] bg-gray-400 dark:bg-gray-600 mr-4" />
                   <AppViewSwitcher
                     currentSelection={switcherSelectionForPath()}

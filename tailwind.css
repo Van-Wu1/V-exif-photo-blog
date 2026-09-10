@@ -590,6 +590,52 @@ html[data-visual-experience='darkroom'] nav {
   background-color: transparent !important;
 }
 
+html[data-visual-experience='darkroom'] .app-nav {
+  z-index: 60;
+  opacity: 1 !important;
+  transform: none !important;
+  color: rgb(211 203 188 / 0.9);
+  border-bottom: 1px solid rgb(186 172 148 / 0.16);
+  background:
+    linear-gradient(to bottom, rgb(5 5 4 / 0.88), rgb(5 5 4 / 0.58))
+    !important;
+  box-shadow: 0 0.6rem 1.8rem rgb(0 0 0 / 0.18);
+  backdrop-filter: blur(12px);
+}
+
+html[data-visual-experience='darkroom'] .app-nav a,
+html[data-visual-experience='darkroom'] .app-nav button,
+html[data-visual-experience='darkroom'] .app-nav .cursor-pointer {
+  color: rgb(207 199 184 / 0.86) !important;
+}
+
+html[data-visual-experience='darkroom'] .app-nav a:hover,
+html[data-visual-experience='darkroom'] .app-nav button:hover,
+html[data-visual-experience='darkroom'] .app-nav .cursor-pointer:hover {
+  color: rgb(244 237 222 / 0.98) !important;
+}
+
+html[data-visual-experience='darkroom'] .app-nav .app-nav-back {
+  opacity: 0.78 !important;
+}
+
+html[data-visual-experience='darkroom'] .app-nav svg {
+  color: currentColor;
+  opacity: 1;
+}
+
+html[data-visual-experience='darkroom']
+  .app-nav
+  .divide-medium
+  > :not([hidden])
+  ~ :not([hidden]) {
+  border-color: rgb(187 175 153 / 0.2);
+}
+
+html[data-visual-experience='darkroom'] .app-nav .outline-medium {
+  outline-color: rgb(187 175 153 / 0.26) !important;
+}
+
 html[data-visual-experience='darkroom'] .visual-experience-switcher {
   background: rgb(8 8 7 / 0.62);
   backdrop-filter: blur(10px);
