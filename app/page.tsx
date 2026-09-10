@@ -19,6 +19,14 @@ const getPhotosCached = cache(() => getPhotos(getFeedQueryOptions({
   isGrid: GRID_HOMEPAGE_ENABLED,
 })));
 
+const getDarkroomPhotosCached = cache(async () => {
+  const { count } = await getPhotosMetaCached();
+  return getPhotos({
+    ...USER_DEFAULT_SORT_OPTIONS,
+    limit: Math.max(count, 1),
+  });
+});
+
 export async function generateMetadata(): Promise<Metadata> {
   const photos = await getPhotosCached()
     .catch(() => []);
@@ -31,6 +39,7 @@ export default async function HomePage() {
     photosCount,
     photosCountWithExcludes,
     categories,
+    darkroomPhotos,
   ] = await Promise.all([
     getPhotosCached()
       .catch(() => []),
@@ -43,6 +52,8 @@ export default async function HomePage() {
     GRID_HOMEPAGE_ENABLED
       ? getDataForCategoriesCached()
       : NULL_CATEGORY_DATA,
+    getDarkroomPhotosCached()
+      .catch(() => []),
   ]);
 
   const classicExperience = photos.length > 0
@@ -64,7 +75,18 @@ export default async function HomePage() {
       : <PhotosEmptyState />;
 
   return (
-    <HomeExperience photos={photos}>
+    <HomeExperience
+      photos={darkroomPhotos.length > 0 ? darkroomPhotos : photos}
+      gallery={<PhotoGridPage
+        {...{
+          photos: darkroomPhotos.length > 0 ? darkroomPhotos : photos,
+          photosCount: photosCountWithExcludes,
+          photosCountWithExcludes,
+          ...USER_DEFAULT_SORT_OPTIONS,
+          ...categories,
+        }}
+      />}
+    >
       {classicExperience}
     </HomeExperience>
   );

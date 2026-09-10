@@ -623,7 +623,6 @@ html[data-visual-experience='darkroom'] .visual-experience-switcher {
   inset: -0.35%;
   overflow: hidden;
   transform: scale(1.007);
-  animation: darkroom-camera-breathe 7.5s ease-in-out infinite alternate;
 }
 
 .darkroom-home-desk {
@@ -687,6 +686,58 @@ html[data-visual-experience='darkroom'] .visual-experience-switcher {
   height: 1.4rem;
   margin: 0 auto 0.65rem;
   background: linear-gradient(to bottom, transparent, currentColor);
+}
+
+.darkroom-home-gallery {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow-x: hidden;
+  overflow-y: auto;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  color: rgb(218 210 194 / 0.84);
+  background:
+    linear-gradient(rgb(4 4 3 / 0.64), rgb(2 2 2 / 0.88)),
+    radial-gradient(circle at 48% 24%, transparent 0%, rgb(0 0 0 / 0.5) 72%),
+    url('/darkroom/home-background-16x9-v1.webp') center top / cover fixed;
+  scrollbar-color: rgb(139 121 96 / 0.42) rgb(3 3 3 / 0.72);
+  will-change: opacity;
+}
+
+.darkroom-home-gallery-inner {
+  width: min(96vw, 112rem);
+  min-height: 100%;
+  margin: 0 auto;
+  padding: clamp(5.75rem, 8vh, 7.25rem) 1.25rem 4rem;
+}
+
+.darkroom-home-gallery-inner [data-photo-grid] img {
+  filter: brightness(0.82) saturate(0.78) contrast(1.04) sepia(0.035);
+  transition: filter 240ms ease;
+}
+
+.darkroom-home-gallery-inner [data-photo-grid] a:hover img,
+.darkroom-home-gallery-inner [data-photo-grid] a:focus-visible img {
+  filter: brightness(1) saturate(0.96) contrast(1.02) sepia(0.015);
+}
+
+.darkroom-home-stage[data-transition-state='forward']
+  .darkroom-home-gallery {
+  animation: darkroom-gallery-reveal 3s linear both;
+}
+
+.darkroom-home-stage[data-transition-state='reverse']
+  .darkroom-home-gallery {
+  animation: darkroom-gallery-reveal 3s linear reverse both;
+}
+
+.darkroom-home-stage[data-transition-state='settled']
+  .darkroom-home-gallery {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .darkroom-home-cards {
@@ -833,14 +884,9 @@ html[data-visual-experience='darkroom'] .visual-experience-switcher {
   top: var(--darkroom-grid-y);
   z-index: 10 !important;
   width: var(--darkroom-grid-width);
-  opacity: 1;
+  visibility: hidden;
+  opacity: 0;
   transform: translate3d(-50%, -50%, 0) rotateZ(0);
-}
-
-.darkroom-home-stage[data-transition-state='settled']
-  .darkroom-home-card-body {
-  animation: darkroom-card-breathe 6.2s ease-in-out
-    var(--darkroom-breathe-delay) infinite alternate;
 }
 
 @keyframes darkroom-desk-fall {
@@ -876,8 +922,8 @@ html[data-visual-experience='darkroom'] .visual-experience-switcher {
   52% {
     transform: rotateX(2.8deg) translate3d(0, 0.6%, 1.2rem) scale(1.008);
   }
-  78% {
-    transform: rotateX(-0.35deg) translate3d(0, -0.15%, 0) scale(1.002);
+  72% {
+    transform: rotateX(0) translate3d(0, 0, 0) scale(1);
   }
   100% {
     transform: rotateX(0) translate3d(0, 0, 0) scale(1);
@@ -907,39 +953,25 @@ html[data-visual-experience='darkroom'] .visual-experience-switcher {
       translate3d(-50%, -54%, 0)
       rotateZ(calc(var(--darkroom-lift-angle) * 0.42));
   }
-  73% {
+  70% {
     left: var(--darkroom-grid-x);
     top: var(--darkroom-grid-y);
     width: var(--darkroom-grid-width);
     opacity: 1;
-    transform: translate3d(-50%, -50%, 0) rotateZ(-1.8deg);
+    transform: translate3d(-50%, -50%, 0) rotateZ(0);
   }
-  82% {
+  80% {
     left: var(--darkroom-grid-x);
     top: var(--darkroom-grid-y);
     width: var(--darkroom-grid-width);
     opacity: 1;
-    transform: translate3d(-50%, -50.4%, 0) rotateZ(0.9deg);
-  }
-  90% {
-    left: var(--darkroom-grid-x);
-    top: var(--darkroom-grid-y);
-    width: var(--darkroom-grid-width);
-    opacity: 1;
-    transform: translate3d(-50%, -50%, 0) rotateZ(-0.36deg);
-  }
-  96% {
-    left: var(--darkroom-grid-x);
-    top: var(--darkroom-grid-y);
-    width: var(--darkroom-grid-width);
-    opacity: 1;
-    transform: translate3d(-50%, -50.1%, 0) rotateZ(0.12deg);
+    transform: translate3d(-50%, -50%, 0) rotateZ(0);
   }
   100% {
     left: var(--darkroom-grid-x);
     top: var(--darkroom-grid-y);
     width: var(--darkroom-grid-width);
-    opacity: 1;
+    opacity: 0;
     transform: translate3d(-50%, -50%, 0) rotateZ(0);
   }
 }
@@ -955,34 +987,26 @@ html[data-visual-experience='darkroom'] .visual-experience-switcher {
   }
   58% {
     transform: perspective(70rem)
-      rotateZ(calc(var(--darkroom-lift-angle) * -0.38));
+      rotateZ(calc(var(--darkroom-lift-angle) * -0.16));
   }
-  73% {
-    transform: perspective(70rem)
-      rotateZ(calc(var(--darkroom-lift-angle) * 0.2));
-  }
-  84% {
-    transform: perspective(70rem)
-      rotateZ(calc(var(--darkroom-lift-angle) * -0.085));
-  }
-  93% {
-    transform: perspective(70rem)
-      rotateZ(calc(var(--darkroom-lift-angle) * 0.025));
-  }
+  70%,
   100% { transform: perspective(70rem) rotateZ(0) rotateX(0); }
 }
 
-@keyframes darkroom-card-breathe {
-  0% { transform: perspective(75rem) rotateX(-0.22deg) rotateZ(-0.16deg); }
-  45% { transform: perspective(75rem) rotateX(0.08deg) rotateZ(0.04deg); }
-  100% { transform: perspective(75rem) rotateX(0.2deg) rotateZ(0.14deg); }
-}
-
-@keyframes darkroom-camera-breathe {
-  0% { transform: translate3d(-0.08%, 0.04%, 0) scale(1.007); }
-  34% { transform: translate3d(0.05%, -0.07%, 0) scale(1.0075); }
-  68% { transform: translate3d(0.09%, 0.06%, 0) scale(1.0068); }
-  100% { transform: translate3d(-0.04%, -0.03%, 0) scale(1.007); }
+@keyframes darkroom-gallery-reveal {
+  0%,
+  72% {
+    visibility: hidden;
+    opacity: 0;
+  }
+  76% {
+    visibility: visible;
+    opacity: 0;
+  }
+  100% {
+    visibility: visible;
+    opacity: 1;
+  }
 }
 
 @keyframes darkroom-overlay-return {
@@ -1898,6 +1922,11 @@ html[data-visual-experience='darkroom'] .darkroom-photo-frame::after {
     top: 15.5%;
   }
 
+  .darkroom-home-gallery-inner {
+    width: 100%;
+    padding: 5.25rem 0.75rem 3rem;
+  }
+
   .darkroom-home-cards {
     perspective: 72rem;
     perspective-origin: 50% 16%;
@@ -1997,6 +2026,7 @@ html[data-visual-experience='darkroom'] .darkroom-photo-frame::after {
 @media (prefers-reduced-motion: reduce) {
   .darkroom-home-camera,
   .darkroom-home-desk,
+  .darkroom-home-gallery,
   .darkroom-home-plane,
   .darkroom-home-card,
   .darkroom-home-card-body {

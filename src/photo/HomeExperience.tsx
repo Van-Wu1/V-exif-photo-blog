@@ -7,14 +7,16 @@ import DarkroomHomeStage from './DarkroomHomeStage';
 
 export default function HomeExperience({
   photos,
+  gallery,
   children,
 }: {
   photos: Photo[]
+  gallery: ReactNode
   children: ReactNode
 }) {
   const { isDarkroomExperience } = useVisualExperience();
 
   return isDarkroomExperience
-    ? <DarkroomHomeStage photos={photos} />
+    ? <DarkroomHomeStage photos={photos} gallery={gallery} />
     : children;
 }

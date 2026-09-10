@@ -2,6 +2,7 @@
 
 import {
   CSSProperties,
+  ReactNode,
   useEffect,
   useRef,
   useState,
@@ -11,7 +12,7 @@ import PhotoMedium from './PhotoMedium';
 
 const FEATURED_CARD_INDEX = 3;
 const SCATTERED_CARD_COUNT = 10;
-const GRID_COLUMNS = 5;
+const GRID_COLUMNS = 6;
 const TRANSITION_DURATION = 3050;
 
 type TransitionDirection = 'forward' | 'reverse';
@@ -63,7 +64,13 @@ const FLIGHT_DURATIONS = [
 
 const clamp = (value: number) => Math.max(0, Math.min(1, value));
 
-export default function DarkroomHomeStage({ photos }: { photos: Photo[] }) {
+export default function DarkroomHomeStage({
+  photos,
+  gallery,
+}: {
+  photos: Photo[]
+  gallery: ReactNode
+}) {
   const [visiblePhotos, setVisiblePhotos] = useState<Photo[]>(() =>
     photos.slice(0, CARD_PLACEMENTS.length),
   );
@@ -73,6 +80,7 @@ export default function DarkroomHomeStage({ photos }: { photos: Photo[] }) {
   const [transitionState, setTransitionState] =
     useState<TransitionState>('idle');
   const stageRef = useRef<HTMLElement>(null);
+  const galleryRef = useRef<HTMLDivElement>(null);
   const transitionStateRef = useRef<TransitionState>('idle');
 
   useEffect(() => {
@@ -135,7 +143,11 @@ export default function DarkroomHomeStage({ photos }: { photos: Photo[] }) {
       if (currentState === 'idle' && event.deltaY > 8) {
         event.preventDefault();
         beginTransition('forward');
-      } else if (currentState === 'settled' && event.deltaY < -8) {
+      } else if (
+        currentState === 'settled'
+        && event.deltaY < -8
+        && (galleryRef.current?.scrollTop ?? 0) <= 1
+      ) {
         event.preventDefault();
         beginTransition('reverse');
       }
@@ -152,6 +164,7 @@ export default function DarkroomHomeStage({ photos }: { photos: Photo[] }) {
       } else if (
         currentState === 'settled'
         && ['ArrowUp', 'PageUp'].includes(event.key)
+        && (galleryRef.current?.scrollTop ?? 0) <= 1
       ) {
         event.preventDefault();
         beginTransition('reverse');
@@ -175,6 +188,7 @@ export default function DarkroomHomeStage({ photos }: { photos: Photo[] }) {
       } else if (
         transitionStateRef.current === 'settled'
         && touchDistance < -24
+        && (galleryRef.current?.scrollTop ?? 0) <= 1
       ) {
         beginTransition('reverse');
       }
@@ -239,6 +253,16 @@ export default function DarkroomHomeStage({ photos }: { photos: Photo[] }) {
             SCROLL TO RELEASE
           </span>
           <div
+            ref={galleryRef}
+            className="darkroom-home-gallery"
+            aria-hidden={transitionState !== 'settled'}
+            inert={transitionState !== 'settled'}
+          >
+            <div className="darkroom-home-gallery-inner">
+              {gallery}
+            </div>
+          </div>
+          <div
             className="darkroom-home-cards"
             aria-busy={visiblePhotos.length === 0}
           >
@@ -269,19 +293,17 @@ export default function DarkroomHomeStage({ photos }: { photos: Photo[] }) {
                   '--darkroom-mobile-x': `${mobilePlacement.x}%`,
                   '--darkroom-mobile-y': `${mobilePlacement.y}%`,
                   '--darkroom-mobile-width': `${mobilePlacement.width}%`,
-                  '--darkroom-grid-x': `${18 + gridColumn * 16}%`,
-                  '--darkroom-grid-y': `${27 + gridRow * 24}%`,
-                  '--darkroom-grid-width': '10.8%',
+                  '--darkroom-grid-x': `${7.2 + gridColumn * 12.25}%`,
+                  '--darkroom-grid-y': `${24 + gridRow * 26}%`,
+                  '--darkroom-grid-width': '11.8%',
                   '--darkroom-mobile-grid-x': `${20 + mobileColumn * 30}%`,
                   '--darkroom-mobile-grid-y': `${17 + mobileRow * 17}%`,
                   '--darkroom-mobile-grid-width': '23%',
                   '--darkroom-flight-delay': `${FLIGHT_DELAYS[index]}ms`,
                   '--darkroom-flight-duration': `${FLIGHT_DURATIONS[index]}ms`,
                   '--darkroom-flight-layer': index + 10,
-                  '--darkroom-swing-direction': swingDirection,
                   '--darkroom-lift-drift': `${swingDirection * (0.7 + (index % 3) * 0.35)}rem`,
                   '--darkroom-lift-angle': `${swingDirection * (3.8 + (index % 4) * 0.9)}deg`,
-                  '--darkroom-breathe-delay': `${(index * 379) % 1700}ms`,
                   '--darkroom-light-x': `${42 + ((index * 7) % 17)}%`,
                   '--darkroom-light-y': `${43 + ((index * 5) % 13)}%`,
                 };
